@@ -1,0 +1,11 @@
+\.idea/
+node_modules/
+yarn.lock
+coverage/
+mochawesome-report/
+\.DS_Store
+\.nyc_output
+scripts/TestRPCData/*
+!scripts/TestRPCData/.gitkeep 
+tmp/
+data/
