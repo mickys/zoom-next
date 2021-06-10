@@ -1,9 +1,9 @@
 /*
 
- * source       https://github.com/MCROEngineering/zoom/
- * @name        ZoomDev
- * @package     ZoomDev
- * @author      Micky Socaci <micky@mcro.tech>
+ * source       https://github.com/mickys/zoom-next/
+ * @name        ZoomNext
+ * @package     ZoomNext
+ * @author      Micky Socaci <micky@binarzone.com>
  * @license     MIT
 
 */

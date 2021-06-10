@@ -1,10 +1,10 @@
 "use strict";
 /*
 
- * source       https://github.com/MCROEngineering/zoom/
+ * source       https://github.com/mickys/zoom-next/
  * @name        HttpProvider
- * @package     ZoomDev
- * @author      Micky Socaci <micky@mcro.tech>
+ * @package     ZoomNext
+ * @author      Micky Socaci <micky@binarzone.com>
  * @license     MIT
  
  based on https://github.com/ethereum/web3.js/blob/develop/lib/web3/httpprovider.js
