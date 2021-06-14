@@ -53,7 +53,8 @@ describe("Zoom Tests", function () {
         const item_identifiers = [];
         const expectedResultCount = 5;
     
-        const itemCount_identifier = ZoomLibraryInstance.addMappingCountCall(MappedStructs, ["itemCount", []], ["itemMap", [0]]);
+
+        const itemCount_identifier = ZoomLibraryInstance.addMappingCountCall(MappedStructs, ["itemCount", []], null, ["itemMap", [0]]);
         // item_identifiers.push( ZoomLibraryInstance.addType4Call(MappedStructs, ["itemMap", [0]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" ) );
 
         // const itemMap0_identifier = ZoomLibraryInstance.addCall(MappedStructs, ["itemMap", [5]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" );

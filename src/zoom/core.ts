@@ -510,7 +510,7 @@ export default class Zoom {
      * @param type
      * 
      */
-    public addMappingCountCall(_contract:any, _methodAndParams: any, _mapAndParams: any) {
+    public addMappingCountCall(_contract:any, _methodAndParams: any, _fullSig: any, _mapAndParams: any) {
 
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const resolveSig = _contract.interface.encodeFunctionData(..._mapAndParams);
@@ -528,6 +528,11 @@ export default class Zoom {
             fullSig: methodSig,
             type: 3
         };
+        
+        if(_fullSig !== null) {
+            this.callsData[identifier].decodeSig = _fullSig;
+        }
+        
 
         return identifier;
 
@@ -575,7 +580,11 @@ export default class Zoom {
      */
     public decodeCall( identifier: string ) {
         const callDetails = this.callsData[identifier];
-        return callDetails.contract.interface.decodeFunctionResult(callDetails.fullSig, this.lasCallData[callDetails.key]);
+        let sig = callDetails.fullSig;
+        if(typeof callDetails.decodeSig !== "undefined") {
+            sig = callDetails.decodeSig;
+        }
+        return callDetails.contract.interface.decodeFunctionResult(sig, this.lasCallData[callDetails.key]);
     }
 
     /** 
