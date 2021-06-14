@@ -1,3 +1,6 @@
+//SPDX-License-Identifier: MIT
+pragma solidity >=0.6.0 <0.8.0;
+
 /*
 
  * source       https://github.com/mickys/zoom-next/
@@ -7,9 +10,6 @@
  * @license     MIT
  
 */
-
-pragma solidity 0.4.25;
-
 
 import "./ItemEntity.sol";
 
@@ -29,7 +29,7 @@ contract ListContract {
 
     event EventNewChildItem(string _name, address _address, uint256 _index);
 
-    constructor() public {
+    constructor() {
         managerAddress = msg.sender;
     }
 
@@ -44,7 +44,7 @@ contract ListContract {
         }
     }
 
-    function addItem(string _name, address _address) public {
+    function addItem(string memory _name, address _address) public {
         require(msg.sender == managerAddress, "Sender must be manager address");
 
         Item storage child = items[++itemNum];
@@ -69,7 +69,7 @@ contract ListContract {
         child.status = false;
     }
 
-    function uintToString(uint v) internal pure returns (string) {
+    function uintToString(uint v) internal pure returns (string memory) {
         uint maxlength = 100;
         bytes memory reversed = new bytes(maxlength);
         uint i = 0;
@@ -77,7 +77,7 @@ contract ListContract {
         while (w != 0) {
             uint remainder = w % 10;
             w = w / 10;
-            reversed[i++] = byte(48 + remainder);
+            reversed[i++] = byte( uint8(48 + remainder) );
         }
         bytes memory s = new bytes(i);
         for (uint j = 0; j < i; j++) {
@@ -86,7 +86,7 @@ contract ListContract {
         return string(s);
     }
 
-    function appendUintToString(string inStr, uint v) internal pure returns (string) {
+    function appendUintToString(string memory inStr, uint v) internal pure returns (string memory) {
         uint maxlength = 100;
         bytes memory reversed = new bytes(maxlength);
         uint i = 0;
@@ -94,7 +94,7 @@ contract ListContract {
         while (w != 0) {
             uint remainder = w % 10;
             w = w / 10;
-            reversed[i++] = byte(48 + remainder);
+            reversed[i++] = byte( uint8(48 + remainder) );
         }
         bytes memory inStrb = bytes(inStr);
         bytes memory s = new bytes(inStrb.length + i);
@@ -121,10 +121,10 @@ contract ListContract {
         return bytesToAddr(addrBytes);
     }
     
-    function bytesToAddr (bytes b) internal pure returns (address) {
+    function bytesToAddr (bytes memory b) internal pure returns (address) {
         uint result = 0;
         for (uint i = b.length-1; i+1 > 0; i--) {
-            uint256 c = uint256(b[i]);
+            uint256 c = uint256( uint8(b[i]) );
             uint256 toInc = c * (16 ** ((b.length - i-1) * 2));
             result += toInc;
         }

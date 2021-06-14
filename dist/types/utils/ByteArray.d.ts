@@ -7,8 +7,8 @@ export default class ByteArray {
     endian: boolean;
     buffer: Buffer;
     constructor(buffer: ByteArray | Buffer | number);
-    readonly bytesAvailable: number;
-    readonly length: number;
+    get bytesAvailable(): number;
+    get length(): number;
     clear(): void;
     reset(): void;
     canWrite(length: number): boolean;
@@ -30,7 +30,7 @@ export default class ByteArray {
         type: "Buffer";
         data: any[];
     };
-    toString(charSet?: string, offset?: number, length?: number): string;
+    toString(charSet?: BufferEncoding, offset?: number, length?: number): string;
     writeBoolean(value: number | boolean): void;
     writeByte(value: number): void;
     writeBytes(buffer: Buffer | ByteArray, offset?: number, length?: number): void;

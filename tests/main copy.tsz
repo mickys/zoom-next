@@ -1,0 +1,152 @@
+const { ZERO_ADDRESS, ROLE, Data } = require('./helpers/common');
+import "@nomiclabs/hardhat-ethers";
+import { ethers } from "hardhat";
+import chai from "chai";
+import { solidity } from "ethereum-waffle";
+chai.use(solidity);
+const { expect } = chai;
+
+// make sure to have ethers.js 5.X required, else this will fail!
+const BigNumber = ethers.BigNumber;
+import { Zoom } from "../src/index";
+
+describe("Zoom Tests", function () {
+
+    // web3 library instance that uses Zoom Http Provider
+    let ZoomProvider; 
+
+    before(async () => {
+
+        const accounts = await ethers.getSigners();
+
+        // deploy targets
+        console.log("============= Targets ===============" );
+
+        // const ListContractArtifacts = await ethers.getContractFactory("ListContract");
+        // const ListContract = await ListContractArtifacts.deploy();
+        // await ListContract.deployed();
+        // console.log("    ListContract:            ", ListContract.address);
+
+        const MappedStructsArtifacts = await ethers.getContractFactory("MappedStructs");
+        const MappedStructs = await MappedStructsArtifacts.deploy();
+        await MappedStructs.deployed();
+        console.log("    MappedStructs:          ", MappedStructs.address);
+
+        const MappedStructsTwo = await MappedStructsArtifacts.deploy();
+        await MappedStructsTwo.deployed();
+        console.log("    MappedStructsTwo:       ", MappedStructsTwo.address);
+
+        const ZoomContractArtifacts = await ethers.getContractFactory("Zoom2");
+        const ZoomContract = await ZoomContractArtifacts.deploy();
+        await ZoomContract.deployed();
+        console.log("    ZoomContract:           ", ZoomContract.address);
+
+        console.log("========== ZOOM SETUP ===============" );
+
+        // Once everything is loaded instantiate the Zoom Library
+        const ZoomLibraryInstance = new Zoom({
+            clone_cache: false,
+            use_reference_calls: true
+        });
+    
+        // const ZoomContract_address   = "0xe07a33e2975b7012eb9bf002aa12aba98d7069dc";
+        // const ZoomContract_address   = "0xE67ecE04c9155Aec82f1439d9C33fa92F4369ef6";
+        // const ZoomContract = new ethers.Contract(ZoomContract_address, ZoomArtifacts.abi, ethersProvider);
+        // const ZoomContract = new ethers.Contract(ZoomContract_address, ZoomArtifacts.abi, accounts[0]);
+        // const MappedStructs     = new ethers.Contract("0x95CB80219eE2Dc4bd4839EF8Dd8Fe5C0bbD3f4bc", MappedStructsArtifacts.abi, accounts[0]);
+        // const MappedStructsTwo  = new ethers.Contract("0x1F2591f095408BB690D2054b778DdE4FD69f4438", MappedStructsArtifacts.abi, accounts[0]);
+    
+        
+    
+        // const itemCount_identifier = ZoomLibraryInstance.addCall(MappedStructs, ["itemCount", []] );
+
+        const item_identifiers = [];
+        const expectedResultCount = 15;
+    
+        const itemCount_identifier = ZoomLibraryInstance.addMappingCountCall(MappedStructs, ["itemCount", []], ["itemMap", [0]]);
+        // item_identifiers.push( ZoomLibraryInstance.addType4Call(MappedStructs, ["itemMap", [0]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" ) );
+
+        // const itemMap0_identifier = ZoomLibraryInstance.addCall(MappedStructs, ["itemMap", [5]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" );
+
+        // const itemMap1_identifier = ZoomLibraryInstance.addCall(MappedStructs, ["itemMap", [6]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" );
+
+        for(let i = 0; i < expectedResultCount; i++) {
+            item_identifiers.push( ZoomLibraryInstance.addType4Call(MappedStructs, ["itemMap", [i]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" ) );
+        }
+    
+        // const itemCount_identifierTwo = ZoomLibraryInstance.addCall(MappedStructsTwo, ["itemCount", []] );
+        // const item_identifiersTwo = [];
+        // const expectedResultCountTwo = 10;
+    
+        // ZoomLibraryInstance.addSpecialCall(MappedStructsTwo, ["itemMap", ["reset"]]);
+        // for(let i = 0; i < expectedResultCountTwo; i++) {
+        //     item_identifiersTwo.push( ZoomLibraryInstance.addType4Call(MappedStructsTwo, ["itemMap", [i]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" ) );
+        // }
+    
+    
+        // console.log(ZoomLibraryInstance.calls)
+    
+        const ZoomQueryBinary = ZoomLibraryInstance.getZoomCall();
+    
+        console.log( "binary:" );
+        ZoomLibraryInstance.binary.forEach(item => {
+            console.log(item.toString("hex"));
+        })
+    
+        console.log("" );
+    
+        console.log( "ZoomQueryBinary:", ZoomQueryBinary.toString("hex") );
+    
+        console.log("======== ZOOM CALL START ============" );
+    
+        console.time('zoomCall')
+    
+        const combinedResult = await ZoomContract.combine( ZoomQueryBinary );
+        // console.log( "combinedResult", combinedResult.toString("hex") );
+    
+        console.timeEnd('zoomCall')
+    
+        console.log("======== ZOOM CALL END ==============" );
+    
+        console.log("combinedResult", combinedResult);
+        const newDataCache = ZoomLibraryInstance.resultsToCache( combinedResult, ZoomQueryBinary );
+        console.log( "newDataCache", newDataCache );
+    
+        console.log("======== ZOOM RESULTS ===============" );
+    
+        console.log("itemCount:", ZoomLibraryInstance.decodeCall(itemCount_identifier).toString() );
+        // console.log("itemMap_0:", ZoomLibraryInstance.decodeCall(itemMap0_identifier) );
+        // console.log("itemMap_1:", ZoomLibraryInstance.decodeCall(itemMap1_identifier) );
+        
+        for(let i = 0; i < expectedResultCount; i++) {
+        // for(let i = 0; i < 10; i++) {
+            console.log("itemMap_"+i+": ", ZoomLibraryInstance.decodeCall(item_identifiers[i]).toString());
+        }
+
+        // if(typeof item_identifiers[0] !== "undefined") {
+        //     console.log("itemMap_10: ", ZoomLibraryInstance.decodeCall(item_identifiers[0]));
+        // }
+    
+        // if(typeof itemMap0_identifier !== "undefined") {
+        //     console.log("itemMap0:", ZoomLibraryInstance.decodeCall(itemMap0_identifier).toString() );
+        // }
+        // if(typeof itemMap1_identifier !== "undefined") {
+        //     console.log("itemMap1:", ZoomLibraryInstance.decodeCall(itemMap1_identifier).toString() );
+        // }
+        // for(let i = 0; i < expectedResultCount; i++) {
+        // for(let i = 0; i < 2; i++) {
+        //     console.log("itemMapTwo_"+i+": ", ZoomLibraryInstance.decodeCall(item_identifiersTwo[i]));
+        // }
+    
+        console.log("======== ZOOM RESULTS END ===========" );
+    
+
+    });
+
+    it("true", async function () {
+
+        expect(true).to.be.equal(true);
+        
+    });
+
+});

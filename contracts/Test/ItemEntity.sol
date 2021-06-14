@@ -1,3 +1,6 @@
+//SPDX-License-Identifier: MIT
+pragma solidity >=0.6.0 <0.8.0;
+
 /*
 
  * source       https://github.com/mickys/zoom-next/
@@ -8,20 +11,17 @@
  
 */
 
-pragma solidity 0.4.25;
-
-
 contract ItemEntity {
 
     string private name;
     address private asset;
 
-    constructor(string _name, address _addr) public {
+    constructor(string memory _name, address _addr) {
         name = _name;
         asset = _addr;
     }
 
-    function getName() public view returns (string) {
+    function getName() public view returns (string memory) {
         return name;
     }
 
@@ -53,19 +53,19 @@ contract ItemEntity {
         return 2**256-1;
     }
 
-    function getString8() public pure returns (string) {
+    function getString8() public pure returns (string memory) {
         return "12345678";
     }
 
-    function getString16() public pure returns (string) {
+    function getString16() public pure returns (string memory) {
         return "1234567812345678";
     }
 
-    function getString32() public pure returns (string) {
+    function getString32() public pure returns (string memory) {
         return "12345678123456781234567812345678";
     }
 
-    function getString64() public pure returns (string) {
+    function getString64() public pure returns (string memory) {
         return "1234567812345678123456781234567812345678123456781234567812345678";
     }
 

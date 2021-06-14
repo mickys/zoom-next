@@ -13,9 +13,9 @@ pragma solidity >=0.6.0 <0.8.0;
 
 */
 
-contract Zoom {
+contract Zoom2 {
     
-    function combine(bytes memory inputData) public view returns (bytes memory, bytes memory) {
+    function combine(bytes memory inputData) public view returns (bytes memory, bytes memory, bytes memory) {
 
         // 0x00 - we use for scratch memory
         // 0x20 - not used
@@ -110,6 +110,9 @@ contract Zoom {
             // set write pointer 
             let thisOutputPointer := add( OutputBuffer, 32)
             
+            let internalCounter := 0
+            // let isExtCall := true
+
             // process calls 
             for { let callNumber := 0 } lt(callNumber, callnum) { callNumber := add(callNumber, 1) } {
 
@@ -122,50 +125,91 @@ contract Zoom {
                 // clean up 0-32 byte scratch area so we can store a new address
                 mstore( 0x00 , 0x0000000000000000000000000000000000000000000000000000000000000000 )
                 
-                // call type cases
-                switch byte( 0, mload( ptr ) )
-                case 2 {
-                    
-                    // read result_id where the "to address" is expected ( bytes[3-4] )
-                    let result_id := add(
-                        mul( byte( 0, mload( add( ptr, 3 ) ) ), 256),
-                        byte( 0, mload( add( ptr, 4 ) ) )
-                    )
-                    
-                    // find our result's address space
-                    let resultStartAddress := add(
-                        // shift pointer by 32 bytes, to data space
-                        add(internalAddresses, 32),
-                        // now multiply by 2 words ( record size )
-                        mul( result_id, 64)
-                    )
-                    
-                    // read offset for the result ( bytes[5-6] )
-                    let offset := add(
-                        mul( byte( 0, mload( add( ptr, 5 ) ) ), 256),
-                        byte( 0, mload( add( ptr, 6 ) ) )
-                    )
-    
-                    // load the contract address we're going to "call"
-                    mstore (0x00, 
-                        and( 
-                            // load 32 bytes, 12 garbage + 20 address
-                            mload( 
-                                sub( 
-                                    add( 
-                                        mload(resultStartAddress), 
-                                    offset),
-                                12) 
-                            ),
-                            // 20 byte address "bytemask"
-                            sub( exp(256, 20), 1 )
-                        )
-                    )
-                   
-                    // shift pointer by 8 bytes, to call data space
-                    ptr := add( ptr, 8 )
+                let callType := byte( 0, mload( ptr ) )
+
+                if eq(callType, 3) {
+                    // reset internal counter so we can retrieve results from a different mapping
+                    internalCounter := 0
                 }
-                default {
+
+                if or( eq(callType, 2), eq(callType, 4)) {
+                    
+                    {
+
+                        // read result_id where the "to address" is expected ( bytes[3-4] )
+                        let result_id := add(
+                            mul( byte( 0, mload( add( ptr, 3 ) ) ), 256),
+                            byte( 0, mload( add( ptr, 4 ) ) )
+                        )
+                    
+                        // read offset for the result ( bytes[5-6] )
+                        let offset := add(
+                            mul( byte( 0, mload( add( ptr, 5 ) ) ), 256),
+                            byte( 0, mload( add( ptr, 6 ) ) )
+                        )
+                        
+                        if eq(callType, 2) {
+
+                            // find our result's address space
+                            let resultStartAddress := add(
+                                // shift pointer by 32 bytes, to data space
+                                add(internalAddresses, 32),
+                                // now multiply by 2 words ( record size )
+                                mul( result_id, 64)
+                            )
+
+                            // load the contract address we're going to "call"
+                            mstore (0x00, 
+                                and( 
+                                    // load 32 bytes, 12 garbage + 20 address
+                                    mload( 
+                                        sub( 
+                                            add( 
+                                                mload(resultStartAddress), 
+                                            offset),
+                                        12) 
+                                    ),
+                                    // 20 byte address "bytemask"
+                                    sub( exp(256, 20), 1 )
+                                )
+                            )
+
+                            // shift pointer by 8 bytes, to call data space
+                            ptr := add( ptr, 8 )
+                        }
+
+                        if eq(callType, 4) {
+
+                            let resultValue := mload(
+                                                    mload(
+                                                        add(
+                                                            add(internalAddresses, 32),
+                                                            mul( result_id, 64)
+                                                        )
+                                                    )
+                                                )
+                            
+                            let callValue := resultValue
+
+                            if or( gt(resultValue, internalCounter), eq(resultValue, internalCounter) ) {
+                                callValue := sub(resultValue, internalCounter)
+                                // increment internal counter
+                                internalCounter := add(internalCounter, 1)
+                            }
+
+                            if gt(internalCounter, resultValue ) {
+                                 callValue := 0
+                            }
+
+                            // replace call data id with computed value
+                            mstore(add(ptr, 32), callValue)
+                        }
+                    }
+                }
+
+                if eq( eq(callType, 2), 0) {
+                
+
                     // type 1 contains address in the next 20 bytes bytes [8-28]
                     // shift pointer by 8 bytes, to address space
                     ptr := add( ptr, 8 )
@@ -186,28 +230,38 @@ contract Zoom {
                     ptr := add( ptr, 20 )
 
                 }
-                
+
+
                 // finally load our address into a stack variable that our call can use
                 let toAddress := mload( 0x00 )
 
                 // do the call!
                 {
-                    let success := staticcall(      
-                                        500000,     
-                                        toAddress ,     // To addr
-                                        ptr,            // Inputs are stored at current ptr location
-                                        dataLength,     // input length
-                                        0,          
-                                        0)          
-        
-                    // copy result byte size from return value ( ignore first 32 bytes ) ( next 32 bytes )
-                    returndatacopy( 
-                        thisOutputPointer,
-                        0, 
-                        returndatasize() 
-                    )
-                    
-                    // save result address in so we can easily reference it
+                    let returnSize := 0
+                    // type 3 is internal
+                    // if eq(isExtCall, true) {
+
+                        pop(
+                            staticcall(      
+                                500000,     
+                                toAddress ,     // To addr
+                                ptr,            // Inputs are stored at current ptr location
+                                dataLength,     // input length
+                                0,          
+                                0
+                            )
+                        )
+            
+                        // copy result byte size from return value ( ignore first 32 bytes ) ( next 32 bytes )
+                        returndatacopy( 
+                            thisOutputPointer,
+                            0, 
+                            returndatasize() 
+                        )
+                        returnSize := returndatasize() 
+                    // } 
+
+                    // save result address in, so we can easily reference it
                     mstore( 
                         add(
                             add( internalAddresses, 32),
@@ -223,16 +277,16 @@ contract Zoom {
                             add( internalAddresses, 64), // add 32 so we're in the result space
                             mul( callNumber, 64)
                         ),
-                        returndatasize() 
+                        returnSize
                     )
                     
                     // shift pointer by data length.. so we're at next call
                     ptr := add( ptr, dataLength )
 
                     // move write pointer 
-                    thisOutputPointer := add(thisOutputPointer, returndatasize() )
+                    thisOutputPointer := add(thisOutputPointer, returnSize )
                     
-                    actualResultLength := add( actualResultLength, returndatasize() )
+                    actualResultLength := add( actualResultLength, returnSize )
 
                     // store result start offset
                     mstore( 
@@ -240,10 +294,10 @@ contract Zoom {
                             add(resultOffsets, 32), // offset by 32 bytes to data space
                             mul(callNumber, 32) 
                         ),
-                        sub( actualResultLength, returndatasize() )
+                        sub( actualResultLength, returnSize )
                     )
                 }
-                
+
             }
             
             // set result length for OutputBuffer
@@ -255,7 +309,7 @@ contract Zoom {
             mstore(0x40, add( thisOutputPointer, 32 ) )
         }
         
-        return ( OutputBuffer, resultOffsets );
+        return ( OutputBuffer, resultOffsets, inputData );
     }
 }
 

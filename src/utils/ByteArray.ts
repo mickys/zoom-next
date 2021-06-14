@@ -185,7 +185,7 @@ export default class ByteArray {
 		return this.buffer.toJSON();
 	}
 
-	public toString(charSet: string = "utf8", offset: number = 0, length: number = this.length): string {
+	public toString(charSet: BufferEncoding = "utf8", offset: number = 0, length: number = this.length): string {
 		return this.buffer.toString(charSet, offset, length);
 	}
 
@@ -340,7 +340,7 @@ export default class ByteArray {
 		this.writeMultiByte(value);
 	}
 
-	public copyBytes(buffer: Buffer | ByteArray, offset: number = 0, length: number = 0): void {
+	public copyBytes(buffer: ByteArray, offset: number = 0, length: number = 0): void {
 		if (offset < 0 || length < 0) {
 			throw new Error("Offset/Length can't be less than 0");
 		}
@@ -358,8 +358,10 @@ export default class ByteArray {
 		}
 
 		if (length > 0) {
+			buffer.reset();
+			buffer.advanceReadPositionBy(offset);
 			for (let i = offset; i < length; i++) {
-				this.writeUnsignedByte(buffer[i]);
+				this.writeByte(buffer.readByte());
 			}
 		}
 	}
