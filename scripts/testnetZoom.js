@@ -33,7 +33,8 @@ async function main() {
     console.log("    Deployment gasCost in wei: ", gasCost.toNumber())
 
    // npx hardhat verify --network rinkeby --contract contracts/Zoom2.sol:Zoom2 "0xC878B3C422BeECB879dE0a2bea01D30C88F0ccdc"
-
+   // npx hardhat verify --network rinkeby --contract contracts/Zoom2.sol:Zoom2 "0x491592F30D9a3d1887F486eA2A3c72ad82fAcF4D"
+   
    // npx hardhat verify --network mainnet --contract contracts/Zoom2.sol:Zoom2 "0x3D4F573904B98066887332EdeF1b3f9b155e8080"
 }
 

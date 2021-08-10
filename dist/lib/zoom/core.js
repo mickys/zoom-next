@@ -145,6 +145,12 @@ class Zoom {
                     packet.type = 4;
                     packet.resultId = resultId.toString();
                 }
+                else if (callType == 5) {
+                    // read method sig and find counter
+                    const resultId = this.getMethodSigPointer(sig);
+                    packet.type = 5;
+                    packet.resultId = resultId.toString();
+                }
             }
             this.binary.push(this.createBinaryCallByteArray(packet, callData));
         });
@@ -323,7 +329,7 @@ class Zoom {
             // 2 bytes - uint16 call_data length
             const callDataLength = bytes.readUnsignedShort();
             let toAddress;
-            if (type === 1 || type === 3 || type === 4) {
+            if (type === 1 || type === 3 || type === 4 || type === 5) {
                 // bypass 5 bytes used in type 2 for result id and offset and 1 byte for unused space
                 bytes.advanceReadPositionBy(5);
                 // normal call that contains toAddress and callData

@@ -15,6 +15,8 @@ import ECNFTArtifacts from './artifacts/ECNFT.json';
 import ECAuctionArtifacts from './artifacts/ECAuction.json';
 import ECRegistryV2Artifacts from './artifacts/ECRegistryV2.json';
 
+import { BitArray, Registry } from "@ethercards/ec-util";
+
 
 import MappedStructsArtifacts from '../artifacts/contracts/Test/MappedStructs.sol/MappedStructs.json';
 import ZoomArtifacts from '../artifacts/contracts/Zoom2.sol/Zoom2.json';
@@ -29,7 +31,7 @@ async function init() {
     const ECAuction     = new ethers.Contract("0xB57fba975C89492B016e0215E819B4d489F0fbcD", ECAuctionArtifacts.abi, ethersProvider);
     const ECRegistry     = new ethers.Contract("0xc7c27535f81C6c15Ee2648fEe00D0831FE071891", ECRegistryV2Artifacts.abi, ethersProvider);
 
-    const ZoomContractInstance = new ethers.Contract("0xC878B3C422BeECB879dE0a2bea01D30C88F0ccdc", ZoomArtifacts.abi, ethersProvider);
+    const ZoomContractInstance = new ethers.Contract("0x491592F30D9a3d1887F486eA2A3c72ad82fAcF4D", ZoomArtifacts.abi, ethersProvider);
 
     const address = "0x51eD19819B5a960B4B3aDfeDEedCeCaB51953010";
 
@@ -68,7 +70,7 @@ async function init() {
         callNum++;
 
         // request the token URI
-        const tokenUriCall = ZoomLibraryInstance.addType4Call(
+        const tokenUriCall = ZoomLibraryInstance.addType5Call(
             ECNFT,
             ["tokenURI(uint256)", [i]],
             "tokenURI(uint256) returns (string)" 
@@ -85,11 +87,12 @@ async function init() {
         item_identifiers.push(traitsCall);
         callNum++;
 
+
     }
     // console.log("callNum", callNum);
     const ZoomQueryBinary = ZoomLibraryInstance.getZoomCall();
 
-    // console.log( "binary:" );
+    // // console.log( "binary:" );
     // ZoomLibraryInstance.binary.forEach(item => {
     //     console.log(item.toString("hex"));
     // })
@@ -102,18 +105,47 @@ async function init() {
     console.timeEnd('zoomCall')
     console.log("======== ZOOM CALL END ==============" );
 
+    // console.log("callResult", combinedResult);
+
     const newDataCache = ZoomLibraryInstance.resultsToCache( combinedResult, ZoomQueryBinary );
 
     console.log("======== ZOOM RESULTS ===============" );
 
-    for(let i = 0; i < callNum; i++) {
-        let traitData = ZoomLibraryInstance.decodeCall(item_identifiers[i]);
-        traits.push(traitData);
+    // console.log("newDataCache", newDataCache);
+    const tokens = [];
+    const registry = new Registry();
+
+    // since we're doing 3 calls per token increment by 3
+    for(let i = 0; i < callNum; i = i+3) {
+        const tokenId = ZoomLibraryInstance.decodeCall(item_identifiers[i]).toString();
+        const tokenURI = ZoomLibraryInstance.decodeCall(item_identifiers[i+1]).toString();
+        const tokenURI2 = ZoomLibraryInstance.decodeCall(item_identifiers[i+2]).toString();
+        // const traitData = ZoomLibraryInstance.decodeCall(item_identifiers[i+2]);
+        // const tokenURI = "";
+
+        // exclude creator cards
+        if(tokenId > 9) {
+            // const decodedTraits = registry.decodeTraits(traitData[0]);
+            tokens.push({
+                "id": tokenId,
+                "uri": tokenURI,
+                "uri2": tokenURI2,
+                // "traitData": traitData,
+                // "traits": decodedTraits
+            });
+        }
     }
+
 
     console.log("======== ZOOM RESULTS END ===========" );
 
-    console.log(traits);
+
+    for(let i = 0; i < tokens.length; i++) {
+        const tokenData = await ECRegistry.getTokenData(tokens[i].id);
+        // console.log("id", tokens[i].id, "uri", tokens[i].uri, "traitData", tokens[i].traitData[0].join(","), "chainData", tokenData.join(","));
+
+        console.log("id", tokens[i].id, "uri", tokens[i].uri, "uri2", tokens[i].uri2, tokenData.join(","));
+    }
 }
 
 init();
