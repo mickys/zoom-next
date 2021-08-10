@@ -44,6 +44,6 @@ export default class ByteArray {
     writeUnsignedShort(value: number): void;
     writeUTF(value: string): void;
     writeUTFBytes(value: string): void;
-    copyBytes(buffer: Buffer | ByteArray, offset?: number, length?: number): void;
+    copyBytes(buffer: ByteArray, offset?: number, length?: number): void;
     advanceReadPositionBy(value: number): void;
 }

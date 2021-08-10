@@ -55,6 +55,10 @@ export default class Zoom {
      * Iterate through our calls and create binaries
      */
     generateBinaryCalls(): void;
+    /**
+     * Iterate through our calls and create binaries
+     */
+    generateBinaryCalls_Old(): void;
     setMethodSigPointer(sig: string, nr: number): void;
     getMethodSigPointer(sig: string): any;
     /**
@@ -111,7 +115,7 @@ export default class Zoom {
      * @param type
      *
      */
-    addMappingCountCall(_contract: any, _methodAndParams: any, _fullSig: any, _mapAndParams: any): any;
+    addMappingCountCall(_contract: any, _methodAndParams: any, _fullSig: any, sigs: any[]): any;
     /**
      * Decode a call to an address
      *
@@ -125,6 +129,6 @@ export default class Zoom {
      * @param calldata
      *
      */
-    readMethodSignature(calldata: string): string;
+    toMethodSignature(calldata: string): string;
 }
 export {};

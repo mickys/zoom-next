@@ -16,14 +16,17 @@ interface packetFormat {
     dataLength: number;
     resultId: number;
     offset: number;
-    toAddress: Buffer;
+    toAddress: ByteArray;
 }
 export default class Zoom {
     version: number;
     options: ZoomOptions;
     cache: {};
     calls: {};
+    callsData: {};
     binary: any;
+    lasCallData: any;
+    methodSigPointers: [];
     private addressInAnyResultCache;
     /**
      *
@@ -36,7 +39,7 @@ export default class Zoom {
      * @param {cache} - ZoomOptions
      * @returns Buffer containing resulting call
      */
-    getZoomCall(cache: {}): any;
+    getZoomCall(cache?: {}): any;
     /**
      * Concatenate all binary calls we have into one large string
      * @param data - the string containing all the calls we want to make
@@ -53,13 +56,19 @@ export default class Zoom {
      */
     generateBinaryCalls(): void;
     /**
+     * Iterate through our calls and create binaries
+     */
+    generateBinaryCalls_Old(): void;
+    setMethodSigPointer(sig: string, nr: number): void;
+    getMethodSigPointer(sig: string): any;
+    /**
      * create binary call byte array
      *
      * @param packet - {@link (packetFormat:interface)}
      * @param callData - Buffer containing method sha and hex encoded parameter values
      * @returns {ByteArray}
      */
-    createBinaryCallByteArray(packet: packetFormat, callData: Buffer): ByteArray;
+    createBinaryCallByteArray(packet: packetFormat, callData: ByteArray): ByteArray;
     /**
      * Remove 0x from string then return it
      * @param string
@@ -88,5 +97,38 @@ export default class Zoom {
     resultsToCache(callResult: any, combinedBinaryCall: Buffer): {};
     toBuffer(string: any): Buffer;
     private readOffsets;
+    /**
+     * Add a call to an address
+     *
+     * @param _contract
+     * @param _methodAndParams
+     * @param _fullSig
+     *
+     * @returns call indentifier
+     */
+    addCall(_contract: any, _methodAndParams: any, _fullSig?: string): any;
+    addType4Call(_contract: any, _methodAndParams: any, _fullSig?: string): any;
+    /**
+     * Add a special view call
+     *
+     * @param _contract
+     * @param type
+     *
+     */
+    addMappingCountCall(_contract: any, _methodAndParams: any, _fullSig: any, sigs: any[]): any;
+    /**
+     * Decode a call to an address
+     *
+     * @param identifier
+     *
+     */
+    decodeCall(identifier: string): any;
+    /**
+     * Read method signature
+     *
+     * @param calldata
+     *
+     */
+    toMethodSignature(calldata: string): string;
 }
 export {};

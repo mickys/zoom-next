@@ -33,7 +33,7 @@ task(
 // Go to https://hardhat.org/config/ to learn more
 
 // const gasPrice = 50000000000; // 50 GWEI
-const gasPrice =    25000000000; // 25 GWEI
+const gasPrice =    15000000000; // 25 GWEI
 // const gasLimit = 12450000; // mainnet
 const gasLimit = 9500000;  // rinkeby
 
