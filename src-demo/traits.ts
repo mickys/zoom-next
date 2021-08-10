@@ -77,7 +77,7 @@ async function init() {
         callNum++;
 
         // Load onChainTraits for trait as well :D
-        const traitsCall = ZoomLibraryInstance.addType4Call(
+        const traitsCall = ZoomLibraryInstance.addType5Call(
             ECRegistry,
             ["getTokenData(uint16)", [i]],
             "getTokenData(uint16) returns (uint8[])" 

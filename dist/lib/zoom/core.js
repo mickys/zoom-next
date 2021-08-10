@@ -402,6 +402,12 @@ class Zoom {
         return identifier;
     }
     addType4Call(_contract, _methodAndParams, _fullSig) {
+        return this.addTypeCall(4, _contract, _methodAndParams, _fullSig);
+    }
+    addType5Call(_contract, _methodAndParams, _fullSig) {
+        return this.addTypeCall(5, _contract, _methodAndParams, _fullSig);
+    }
+    addTypeCall(_type, _contract, _methodAndParams, _fullSig) {
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address + "_" + methodSig).toLowerCase();
         const identifier = crypto_js_1.default.MD5(_key);
@@ -413,7 +419,7 @@ class Zoom {
             contract: _contract,
             key: _key,
             fullSig: _fullSig,
-            type: 4
+            type: _type
         };
         return identifier;
     }

@@ -132,7 +132,7 @@ contract Zoom2 {
                     internalCounter := 0
                 }
 
-                if or( eq(callType, 2), eq(callType, 4)) {
+                if or( or( eq(callType, 2), eq(callType, 4)), eq(callType, 5)) {
                     
                     {
 
@@ -178,7 +178,7 @@ contract Zoom2 {
                             ptr := add( ptr, 8 )
                         }
 
-                        if eq(callType, 4) {
+                        if or( eq(callType, 4), eq(callType, 5) ) {
 
                             let resultValue := mload(
                                                     mload(
@@ -194,7 +194,10 @@ contract Zoom2 {
                             if or( gt(resultValue, internalCounter), eq(resultValue, internalCounter) ) {
                                 callValue := sub(resultValue, internalCounter)
                                 // increment internal counter
-                                internalCounter := add(internalCounter, 1)
+
+                                if eq(callType, 4) {
+                                    internalCounter := add(internalCounter, 1)
+                                }
                             }
 
                             if gt(internalCounter, resultValue ) {

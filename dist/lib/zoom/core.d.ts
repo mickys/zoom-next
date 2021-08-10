@@ -108,6 +108,8 @@ export default class Zoom {
      */
     addCall(_contract: any, _methodAndParams: any, _fullSig?: string): any;
     addType4Call(_contract: any, _methodAndParams: any, _fullSig?: string): any;
+    addType5Call(_contract: any, _methodAndParams: any, _fullSig?: string): any;
+    private addTypeCall;
     /**
      * Add a special view call
      *

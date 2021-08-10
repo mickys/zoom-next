@@ -551,6 +551,14 @@ export default class Zoom {
     }
 
     public addType4Call(_contract:any, _methodAndParams: any, _fullSig?: string) {
+        return this.addTypeCall(4, _contract, _methodAndParams, _fullSig);
+    }
+
+    public addType5Call(_contract:any, _methodAndParams: any, _fullSig?: string) {
+        return this.addTypeCall(5, _contract, _methodAndParams, _fullSig);
+    }
+
+    private addTypeCall(_type: number, _contract:any, _methodAndParams: any, _fullSig?: string) {
 
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address+"_"+methodSig).toLowerCase();
@@ -566,7 +574,7 @@ export default class Zoom {
             contract: _contract,
             key: _key,
             fullSig: _fullSig,
-            type: 4
+            type: _type
         };
 
         return identifier;
