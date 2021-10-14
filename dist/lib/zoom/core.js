@@ -107,6 +107,10 @@ class Zoom {
             // split address from data
             const callToAddress = str[0];
             const callDataString = str[1];
+            let count;
+            if (typeof str[2] !== "undefined") {
+                count = str[2];
+            }
             callIndex++;
             // convert our hex string to a buffer so we can actually use it
             const callData = new ByteArray_1.default(Buffer.from(this.removeZeroX(callDataString), "hex"));
@@ -117,99 +121,106 @@ class Zoom {
                 offset: 0,
                 toAddress: new ByteArray_1.default(Buffer.from(this.removeZeroX(callToAddress), "hex")), // key contains to address
             };
-            // if active then try to build type 2 calls
-            if (this.options.use_reference_calls === true) {
-                const { found, callNum, bytePosition } = this.findToAddressInAnyResult(callToAddress);
-                if (found === true) {
-                    packet.type = 2;
-                    packet.toAddress = new ByteArray_1.default(Buffer.alloc(0));
-                    packet.resultId = callNum.toString();
-                    packet.offset = bytePosition.toString();
-                }
+            let _key = (callToAddress + "_" + callDataString).toLowerCase();
+            if (count) {
+                _key = (callToAddress + "_" + callDataString + "_" + count).toLowerCase();
             }
-            const _key = (callToAddress + "_" + callDataString).toLowerCase();
             const identifier = crypto_js_1.default.MD5(_key);
-            const callType = this.callsData[identifier].type;
-            const sig = this.toMethodSignature(callData.toString("hex"));
-            // console.log("sig", sig, "callType", callType, "callIndex", callIndex, "callDataString", callDataString, "mapkeys:",  this.callsData[identifier].mapkey);
-            if (typeof callType !== "undefined") {
-                if (callType == 3) {
-                    for (let y = 0; y < this.callsData[identifier].mapkey.length; y++) {
-                        this.setMethodSigPointer(this.callsData[identifier].mapkey[y], callIndex);
+            if (typeof this.callsData[identifier] !== "undefined") {
+                const callType = this.callsData[identifier].type;
+                const sig = this.toMethodSignature(callData.toString("hex"));
+                // console.log("sig", sig, "callType", callType, "callIndex", callIndex, "callDataString", callDataString, "mapkeys:",  this.callsData[identifier].mapkey);
+                if (typeof callType !== "undefined") {
+                    if (callType === 2) {
+                        // previous call always.
+                        const resultId = callIndex - 1;
+                        packet.type = 2;
+                        packet.toAddress = new ByteArray_1.default(Buffer.alloc(0));
+                        packet.resultId = resultId;
+                        packet.offset = this.callsData[identifier].resultIndex * 32;
                     }
-                    packet.type = 3;
+                    else if (callType === 3) {
+                        for (let y = 0; y < this.callsData[identifier].mapkey.length; y++) {
+                            this.setMethodSigPointer(this.callsData[identifier].mapkey[y], callIndex);
+                        }
+                        packet.type = 3;
+                    }
+                    else if (callType === 4) {
+                        // read method sig and find counter
+                        const resultId = this.getMethodSigPointer(sig);
+                        packet.type = 4;
+                        packet.resultId = resultId.toString();
+                    }
+                    else if (callType === 5) {
+                        // read method sig and find counter
+                        const resultId = this.getMethodSigPointer(sig);
+                        packet.type = 5;
+                        packet.resultId = resultId.toString();
+                    }
+                    else if (callType === 6) {
+                        // previous call always.
+                        packet.type = 6;
+                        packet.resultId = callIndex - 1;
+                    }
                 }
-                else if (callType == 4) {
-                    // read method sig and find counter
-                    const resultId = this.getMethodSigPointer(sig);
-                    packet.type = 4;
-                    packet.resultId = resultId.toString();
-                }
-                else if (callType == 5) {
-                    // read method sig and find counter
-                    const resultId = this.getMethodSigPointer(sig);
-                    packet.type = 5;
-                    packet.resultId = resultId.toString();
-                }
+                this.binary.push(this.createBinaryCallByteArray(packet, callData));
             }
-            this.binary.push(this.createBinaryCallByteArray(packet, callData));
         });
     }
     /**
      * Iterate through our calls and create binaries
      */
-    generateBinaryCalls_Old() {
-        // clean our address cache
-        this.addressInAnyResultCache = {};
-        let callIndex = -1;
-        Object.keys(this.calls).forEach((callToAddress) => {
-            // for each grouped value
-            this.calls[callToAddress].forEach((callDataString, subIndex) => {
-                callIndex++;
-                // convert our hex string to a buffer so we can actually use it
-                const callData = new ByteArray_1.default(Buffer.from(this.removeZeroX(callDataString), "hex"));
-                const packet = {
-                    type: 1,
-                    dataLength: callData.length,
-                    resultId: 0,
-                    offset: 0,
-                    toAddress: new ByteArray_1.default(Buffer.from(this.removeZeroX(callToAddress), "hex")), // key contains to address
-                };
-                // if active then try to build type 2 calls
-                if (this.options.use_reference_calls === true) {
-                    const { found, callNum, bytePosition } = this.findToAddressInAnyResult(callToAddress);
-                    if (found === true) {
-                        packet.type = 2;
-                        packet.toAddress = new ByteArray_1.default(Buffer.alloc(0));
-                        packet.resultId = callNum.toString();
-                        packet.offset = bytePosition.toString();
-                    }
-                }
-                const _key = (callToAddress + "_" + callDataString).toLowerCase();
-                const identifier = crypto_js_1.default.MD5(_key);
-                const callType = this.callsData[identifier].type;
-                const sig = this.toMethodSignature(callData.toString("hex"));
-                // console.log("sig", sig, "callType", callType, "callIndex", callIndex, "callDataString", callDataString);
-                if (typeof callType !== "undefined") {
-                    if (callType == 3) {
-                        const mapkey = this.toMethodSignature(this.callsData[identifier].mapkey[0]);
-                        // read method sig and set internal result id
-                        this.setMethodSigPointer(mapkey, callIndex);
-                        packet.type = 3;
-                    }
-                    else if (callType == 4) {
-                        // read method sig and find counter
-                        const resultId = this.getMethodSigPointer(sig);
-                        packet.type = 4;
-                        // console.log("??? sig ", sig);
-                        // console.log("resultId", resultId);
-                        packet.resultId = resultId.toString();
-                    }
-                }
-                this.binary.push(this.createBinaryCallByteArray(packet, callData));
-            });
-        });
-    }
+    // public generateBinaryCalls_Old() {
+    //     // clean our address cache
+    //     this.addressInAnyResultCache = {};
+    //     let callIndex = -1;
+    //     Object.keys(this.calls).forEach((callToAddress) => {
+    //         // for each grouped value
+    //         this.calls[callToAddress].forEach((callDataString, subIndex) => {
+    //             callIndex++;
+    //             // convert our hex string to a buffer so we can actually use it
+    //             const callData = new ByteArray( Buffer.from(this.removeZeroX(callDataString), "hex") );
+    //             const packet: packetFormat = {
+    //                 type: 1,
+    //                 dataLength: callData.length,
+    //                 resultId: 0,
+    //                 offset: 0,
+    //                 toAddress: new ByteArray( Buffer.from(this.removeZeroX(callToAddress), "hex") ), // key contains to address
+    //             };
+    //             // if active then try to build type 2 calls
+    //             if (this.options.use_reference_calls === true) {
+    //                 const { found, callNum, bytePosition } = this.findToAddressInAnyResult(callToAddress);
+    //                 if (found === true) {
+    //                     packet.type = 2;
+    //                     packet.toAddress = new ByteArray(Buffer.alloc(0));
+    //                     packet.resultId = callNum.toString();
+    //                     packet.offset = bytePosition.toString();
+    //                 }
+    //             }
+    //             const _key = (callToAddress+"_"+callDataString).toLowerCase();
+    //             const identifier = CryptoJS.MD5(_key);
+    //             const callType = this.callsData[identifier].type;
+    //             const sig = this.toMethodSignature(callData.toString("hex"));
+    //             // console.log("sig", sig, "callType", callType, "callIndex", callIndex, "callDataString", callDataString);
+    //             if(typeof callType !== "undefined" ) {
+    //                 if(callType == 3) {
+    //                     const mapkey = this.toMethodSignature(this.callsData[identifier].mapkey[0]);
+    //                     // read method sig and set internal result id
+    //                      this.setMethodSigPointer(mapkey, callIndex);
+    //                     packet.type = 3;
+    //                 } else if(callType == 4) {
+    //                     // read method sig and find counter
+    //                     const resultId = this.getMethodSigPointer(sig);
+    //                     packet.type = 4;
+    //                     // console.log("??? sig ", sig);
+    //                     // console.log("resultId", resultId);
+    //                     packet.resultId = resultId.toString();
+    //                 }
+    //             }
+    //             this.binary.push(this.createBinaryCallByteArray(packet, callData));
+    //         });
+    //     });
+    // }
     setMethodSigPointer(sig, nr) {
         this.methodSigPointers[sig] = nr;
     }
@@ -268,6 +279,8 @@ class Zoom {
             this.calls[toAddress].push(toCall);
         });
     }
+    determineResultPositionByte() {
+    }
     /**
      * Search current calls for the "to address" and if found return index and byte offset
      *
@@ -323,13 +336,14 @@ class Zoom {
         for (let i = 0; i < callLength; i++) {
             Results.push(resultString.substring(resultOffsets[i] * 2, resultOffsets[i + 1] * 2));
         }
+        // console.log("Results", Results)
         for (let i = 0; i < callLength; i++) {
             // 1 byte - uint8 call type ( 1 normal / 2 - to address is result of a previous call )
             const type = bytes.readByte();
             // 2 bytes - uint16 call_data length
             const callDataLength = bytes.readUnsignedShort();
             let toAddress;
-            if (type === 1 || type === 3 || type === 4 || type === 5) {
+            if (type === 1 || type === 3 || type === 4 || type === 5 || type === 6) {
                 // bypass 5 bytes used in type 2 for result id and offset and 1 byte for unused space
                 bytes.advanceReadPositionBy(5);
                 // normal call that contains toAddress and callData
@@ -349,14 +363,30 @@ class Zoom {
             const callData = new ByteArray_1.default(callDataLength);
             bytes.readBytes(callData, 0, callDataLength);
             // combine our call and data and attach result
-            newData["0x" + toAddress + "_0x" + callData.toString("hex")] = "0x" + Results[i];
+            let _key = "0x" + toAddress + "_0x" + callData.toString("hex");
+            if (type === 6) {
+                let count = 0;
+                let _newkey = _key + "_" + count;
+                if (typeof newData[_key] === "undefined") {
+                    // assign old value to new _0 value
+                    const oldData = newData[_key];
+                    newData[_key] = count;
+                    newData[_newkey] = oldData;
+                }
+                else {
+                    count = ++newData[_key];
+                }
+                _key = _key + "_" + count;
+            }
+            newData[_key] = "0x" + Results[i];
         }
         // make sure the result length matches our expected size,
         // otherwise let the user know something went wrong
         if (callLength !== Results.length) {
             throw new Error("Zoom: Result size error, something went wrong.");
         }
-        this.lasCallData = newData;
+        this.lastCallData = newData;
+        // console.log("newData", newData);
         return newData;
     }
     toBuffer(string) {
@@ -457,31 +487,62 @@ class Zoom {
             this.callsData[identifier].decodeSig = _fullSig;
         }
         return identifier;
+    }
+    /**
+     * Add a special view call
+     *
+     * @param _contract
+     * @param type
+     *
+     */
+    addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig) {
+        const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
+        const _key = (_contract.address + "_" + methodSig).toLowerCase();
+        if (typeof _fullSig === "undefined") {
+            _fullSig = methodSig;
+        }
+        let count = 0;
+        if (typeof this.calls[_key] === "undefined") {
+            this.calls[_key] = count;
+        }
+        else {
+            count = ++this.calls[_key];
+        }
+        const _newkey = (_contract.address + "_" + methodSig + "_" + count).toLowerCase();
+        const oldidentifier = crypto_js_1.default.MD5(_key);
+        const identifier = crypto_js_1.default.MD5(_newkey);
+        this.calls[_newkey] = "";
+        // console.log("_newkey", _newkey, "oldidentifier", oldidentifier.toString(), "identifier", identifier.toString());
+        this.callsData[identifier] = {
+            contract: _contract,
+            key: _key,
+            fullSig: _fullSig,
+            type: 6,
+            resultIndex: resultIndex,
+            count: count
+        };
+        return identifier;
         // const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
-        // // convert our call to type 4
-        // const newBytes: ByteArray = new ByteArray(
-        //     Buffer.from("")
-        // );
-        // // strip out 0x
-        // const cleanBinary = this.removeZeroX(methodSig);
-        // // convert the result to a byte array so we can process it
-        // const bytes: ByteArray = new ByteArray(
-        //     Buffer.from(cleanBinary, "hex")
-        // );
-        // // copy method signature - 4 bytes
-        // newBytes.copyBytes(bytes, 0, 4);
-        // for(let i = 0; i < 32; i++) {
-        //     newBytes.writeUnsignedByte(255);
-        //     // newBytes.writeUnsignedByte(0);
-        // }
-        // const _key = (_contract.address+"_0x"+newBytes.toString("hex")).toLowerCase();
+        // const _key = (_contract.address+"_"+methodSig).toLowerCase();
         // this.calls[_key] = "";
         // const identifier = CryptoJS.MD5(_key);
+        // const _mapkeys = [];
+        // for(let i = 0; i < sigs.length; i++) {
+        //     const resolveSig = sigs[i].contract.interface.encodeFunctionData(...sigs[i].mapAndParams);
+        //     _mapkeys.push((this.toMethodSignature(resolveSig.toString("hex"))).toLowerCase());
+        // }
         // this.callsData[identifier] = {
         //     contract: _contract,
         //     key: _key,
-        //     type: 3
+        //     mapkey: _mapkeys,
+        //     fullSig: methodSig,
+        //     type: 2,
+        //     resultIndex: resultIndex
         // };
+        // if(_fullSig !== null) {
+        //     this.callsData[identifier].decodeSig = _fullSig;
+        // }
+        // return identifier;
     }
     /**
      * Decode a call to an address
@@ -495,7 +556,13 @@ class Zoom {
         if (typeof callDetails.decodeSig !== "undefined") {
             sig = callDetails.decodeSig;
         }
-        return callDetails.contract.interface.decodeFunctionResult(sig, this.lasCallData[callDetails.key]);
+        if (callDetails.type === 6) {
+            const key = callDetails.key + "_" + callDetails.count;
+            return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[key]);
+        }
+        else {
+            return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[callDetails.key]);
+        }
     }
     /**
      * Read method signature

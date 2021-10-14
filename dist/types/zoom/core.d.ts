@@ -25,7 +25,7 @@ export default class Zoom {
     calls: {};
     callsData: {};
     binary: any;
-    lasCallData: any;
+    lastCallData: any;
     methodSigPointers: [];
     private addressInAnyResultCache;
     /**
@@ -58,7 +58,6 @@ export default class Zoom {
     /**
      * Iterate through our calls and create binaries
      */
-    generateBinaryCalls_Old(): void;
     setMethodSigPointer(sig: string, nr: number): void;
     getMethodSigPointer(sig: string): any;
     /**
@@ -79,6 +78,7 @@ export default class Zoom {
      * Group calls by "to" address
      */
     groupCalls(): void;
+    determineResultPositionByte(): void;
     /**
      * Search current calls for the "to address" and if found return index and byte offset
      *
@@ -118,6 +118,14 @@ export default class Zoom {
      *
      */
     addMappingCountCall(_contract: any, _methodAndParams: any, _fullSig: any, sigs: any[]): any;
+    /**
+     * Add a special view call
+     *
+     * @param _contract
+     * @param type
+     *
+     */
+    addResultReferenceCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any): any;
     /**
      * Decode a call to an address
      *
