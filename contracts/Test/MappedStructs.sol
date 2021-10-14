@@ -24,6 +24,9 @@ contract MappedStructs {
     mapping(uint256 => ItemStruct) public itemMap;
     uint256                        public itemCount;
 
+    mapping(uint256 => address)    public uintToAddrMap;
+    mapping(address => uint256)    public addrToUintMap;
+
     constructor () {
 
         addItem("s1", address(0x01), 1, 1, true);
@@ -35,10 +38,34 @@ contract MappedStructs {
         addItem("s7", address(0x07), 7, 7, true);
         addItem("s8", address(0x08), 8, 8, true);
         addItem("s9", address(0x09), 9, 9, true);
-        // addItem("s10", address(0x10), 10, 10, true);
-        // addItem("s11", address(0x10), 10, 10, true);
-        // addItem("s12", address(0x10), 10, 10, true);
 
+        uintToAddrMap[1] = address(0x01); 
+        uintToAddrMap[2] = address(0x02); 
+        uintToAddrMap[3] = address(0x03); 
+        uintToAddrMap[4] = address(0x04); 
+        uintToAddrMap[5] = address(0x05); 
+        uintToAddrMap[6] = address(0x06); 
+        uintToAddrMap[7] = address(0x07); 
+        uintToAddrMap[8] = address(0x08); 
+        uintToAddrMap[9] = address(0x09); 
+
+        addrToUintMap[address(0x01)] = 11; 
+        addrToUintMap[address(0x02)] = 22; 
+        addrToUintMap[address(0x03)] = 33; 
+        addrToUintMap[address(0x04)] = 44; 
+        addrToUintMap[address(0x05)] = 55; 
+        addrToUintMap[address(0x06)] = 66; 
+        addrToUintMap[address(0x07)] = 77; 
+        addrToUintMap[address(0x08)] = 88; 
+        addrToUintMap[address(0x09)] = 99; 
+    }
+
+    function getItemAddr(uint16 index) public view returns (address) {
+        return uintToAddrMap[index];
+    }
+
+    function getItemValForAddress(address _addr) public view returns (uint256) {
+        return addrToUintMap[_addr];
     }
 
     function addItem(string memory _str, address _addr, uint256 _uint256, uint16 _uint16, bool _bool ) public {

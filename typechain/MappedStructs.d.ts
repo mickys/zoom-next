@@ -22,23 +22,59 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 interface MappedStructsInterface extends ethers.utils.Interface {
   functions: {
     "addItem(string,address,uint256,uint16,bool)": FunctionFragment;
+    "addrToUintMap(address)": FunctionFragment;
+    "getItemAddr(uint16)": FunctionFragment;
+    "getItemValForAddress(address)": FunctionFragment;
     "itemCount()": FunctionFragment;
     "itemMap(uint256)": FunctionFragment;
+    "uintToAddrMap(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "addItem",
     values: [string, string, BigNumberish, BigNumberish, boolean]
   ): string;
+  encodeFunctionData(
+    functionFragment: "addrToUintMap",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getItemAddr",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getItemValForAddress",
+    values: [string]
+  ): string;
   encodeFunctionData(functionFragment: "itemCount", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "itemMap",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "uintToAddrMap",
+    values: [BigNumberish]
+  ): string;
 
   decodeFunctionResult(functionFragment: "addItem", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "addrToUintMap",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getItemAddr",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getItemValForAddress",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "itemCount", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "itemMap", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "uintToAddrMap",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
@@ -96,6 +132,21 @@ export class MappedStructs extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    addrToUintMap(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getItemAddr(
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    getItemValForAddress(
+      _addr: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     itemCount(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     itemMap(
@@ -110,6 +161,11 @@ export class MappedStructs extends BaseContract {
         _bool: boolean;
       }
     >;
+
+    uintToAddrMap(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
   };
 
   addItem(
@@ -120,6 +176,15 @@ export class MappedStructs extends BaseContract {
     _bool: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  addrToUintMap(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  getItemAddr(index: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  getItemValForAddress(
+    _addr: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   itemCount(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -136,6 +201,8 @@ export class MappedStructs extends BaseContract {
     }
   >;
 
+  uintToAddrMap(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
   callStatic: {
     addItem(
       _str: string,
@@ -145,6 +212,18 @@ export class MappedStructs extends BaseContract {
       _bool: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    addrToUintMap(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    getItemAddr(
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getItemValForAddress(
+      _addr: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     itemCount(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -160,6 +239,11 @@ export class MappedStructs extends BaseContract {
         _bool: boolean;
       }
     >;
+
+    uintToAddrMap(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
   };
 
   filters: {};
@@ -174,9 +258,26 @@ export class MappedStructs extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    addrToUintMap(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    getItemAddr(
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getItemValForAddress(
+      _addr: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     itemCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     itemMap(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+    uintToAddrMap(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -189,9 +290,29 @@ export class MappedStructs extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    addrToUintMap(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getItemAddr(
+      index: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getItemValForAddress(
+      _addr: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     itemCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     itemMap(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    uintToAddrMap(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

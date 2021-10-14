@@ -10,6 +10,7 @@
 
 import { Zoom } from "../src/index";
 import {ethers} from 'ethers';
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 import ECNFTArtifacts from './artifacts/ECNFT.json';
 import ECAuctionArtifacts from './artifacts/ECAuction.json';
@@ -22,13 +23,15 @@ const ethersProvider = new ethers.providers.JsonRpcProvider("https://rinkeby.now
 async function init() {
 
     // 0xAe071C9b3Eb3942160AE6bCA650683518F70127F 0x7b9789cf736bd2f1ba0cfb7504668622b1a3cecb
+    const traitRegistry_abi = [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"_address","type":"address"},{"indexed":false,"internalType":"bool","name":"mode","type":"bool"}],"name":"contractControllerEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"_name","type":"string"},{"indexed":false,"internalType":"address","name":"_address","type":"address"},{"indexed":false,"internalType":"uint8","name":"_traitType","type":"uint8"},{"indexed":false,"internalType":"uint16","name":"_start","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"_end","type":"uint16"}],"name":"newTraitEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint16","name":"_traitId","type":"uint16"},{"indexed":true,"internalType":"uint16","name":"_tokenId","type":"uint16"},{"indexed":false,"internalType":"bool","name":"mode","type":"bool"}],"name":"tokenTraitChangeEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"_address","type":"address"}],"name":"traitControllerEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint16","name":"_id","type":"uint16"}],"name":"updateTraitDataEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint16","name":"_id","type":"uint16"},{"indexed":false,"internalType":"string","name":"_name","type":"string"},{"indexed":false,"internalType":"address","name":"_address","type":"address"},{"indexed":false,"internalType":"uint8","name":"_traitType","type":"uint8"},{"indexed":false,"internalType":"uint16","name":"_start","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"_end","type":"uint16"}],"name":"updateTraitEvent","type":"event"},{"inputs":[{"internalType":"string[]","name":"_name","type":"string[]"},{"internalType":"address[]","name":"_implementer","type":"address[]"},{"internalType":"uint8[]","name":"_traitType","type":"uint8[]"},{"internalType":"uint16[]","name":"_start","type":"uint16[]"},{"internalType":"uint16[]","name":"_end","type":"uint16[]"}],"name":"addTrait","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_addr","type":"address"},{"internalType":"uint16","name":"traitID","type":"uint16"}],"name":"addressCanModifyTrait","outputs":[{"internalType":"bool","name":"result","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_addr","type":"address"},{"internalType":"uint16[]","name":"traitIDs","type":"uint16[]"}],"name":"addressCanModifyTraits","outputs":[{"internalType":"bool","name":"result","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"_offset","type":"uint16"}],"name":"getByteAndBit","outputs":[{"internalType":"uint16","name":"_byte","type":"uint16"},{"internalType":"uint8","name":"_bit","type":"uint8"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"_index","type":"uint256"}],"name":"getContractControllerAt","outputs":[{"internalType":"address","name":"_address","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_addr","type":"address"}],"name":"getContractControllerContains","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getContractControllerLength","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"traitId","type":"uint16"},{"internalType":"uint8","name":"_page","type":"uint8"},{"internalType":"uint16","name":"_perPage","type":"uint16"}],"name":"getData","outputs":[{"internalType":"uint8[]","name":"","type":"uint8[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"traitID","type":"uint16"}],"name":"getImplementer","outputs":[{"internalType":"address","name":"implementer","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"tokenId","type":"uint16"}],"name":"getTokenData","outputs":[{"internalType":"uint8[]","name":"","type":"uint8[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_addr","type":"address"}],"name":"getTraitControllerAccessData","outputs":[{"internalType":"uint8[]","name":"","type":"uint8[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"traitID","type":"uint16"},{"internalType":"uint16","name":"tokenId","type":"uint16"}],"name":"hasTrait","outputs":[{"internalType":"bool","name":"result","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_controller","type":"address"},{"internalType":"bool","name":"_mode","type":"bool"}],"name":"setContractController","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"traitId","type":"uint16"},{"internalType":"uint16[]","name":"_ids","type":"uint16[]"},{"internalType":"uint8[]","name":"_data","type":"uint8[]"}],"name":"setData","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"traitID","type":"uint16"},{"internalType":"uint16","name":"tokenId","type":"uint16"},{"internalType":"bool","name":"_value","type":"bool"}],"name":"setTrait","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_addr","type":"address"},{"internalType":"uint16","name":"traitID","type":"uint16"},{"internalType":"bool","name":"_value","type":"bool"}],"name":"setTraitControllerAccess","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_addr","type":"address"},{"internalType":"uint8[]","name":"_data","type":"uint8[]"}],"name":"setTraitControllerAccessData","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"traitID","type":"uint16"},{"internalType":"uint16[]","name":"tokenIds","type":"uint16[]"},{"internalType":"bool[]","name":"_value","type":"bool[]"}],"name":"setTraitOnMultiple","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"","type":"uint16"},{"internalType":"uint16","name":"","type":"uint16"}],"name":"tokenData","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint8","name":"","type":"uint8"}],"name":"traitControllerAccess","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"traitControllerByAddress","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"","type":"uint16"}],"name":"traitControllerById","outputs":[{"internalType":"address","name":"_address","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"traitControllerCount","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"traitCount","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint16","name":"","type":"uint16"}],"name":"traits","outputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"address","name":"implementer","type":"address"},{"internalType":"uint8","name":"traitType","type":"uint8"},{"internalType":"uint16","name":"start","type":"uint16"},{"internalType":"uint16","name":"end","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"_traitId","type":"uint16"},{"internalType":"string","name":"_name","type":"string"},{"internalType":"address","name":"_implementer","type":"address"},{"internalType":"uint8","name":"_traitType","type":"uint8"},{"internalType":"uint16","name":"_start","type":"uint16"},{"internalType":"uint16","name":"_end","type":"uint16"}],"name":"updateTrait","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 
-    const ECNFT         = new ethers.Contract("0x7b9789cf736bd2f1ba0cfb7504668622b1a3cecb", ECNFTArtifacts.abi, ethersProvider);
-    const ECAuction     = new ethers.Contract("0xB57fba975C89492B016e0215E819B4d489F0fbcD", ECAuctionArtifacts.abi, ethersProvider);
-    const MappedStructs     = new ethers.Contract("0x95CB80219eE2Dc4bd4839EF8Dd8Fe5C0bbD3f4bc", MappedStructsArtifacts.abi, ethersProvider);
-    const MappedStructsTwo  = new ethers.Contract("0x1F2591f095408BB690D2054b778DdE4FD69f4438", MappedStructsArtifacts.abi, ethersProvider);
+    const TraitRegistry = new ethers.Contract("0xE4EbA7dcD0C3F0D62f39A8573655531f864F54b5", traitRegistry_abi, ethersProvider);
 
-    const ZoomContractInstance = new ethers.Contract("0xC878B3C422BeECB879dE0a2bea01D30C88F0ccdc", ZoomArtifacts.abi, ethersProvider);
+    // v2 0x5B4B84F5A862A0EAb7a1B8B04946B5947BCEd28c
+    // 0xf91b9E3f33b6983CDce93398Db342Ccb52Ad8149
+    // 0xc1bd29fb965d57acbb6059befb7377c12858d957
+    // 0x19d1168fE8304F07447EFA03Ec0aFc3769683FC3
+    const ZoomContractInstance = new ethers.Contract("0x874cfe2e846cd17187db3ac9b3cd9e47db957b28", ZoomArtifacts.abi, ethersProvider);
 
     console.log("========== ZOOM SETUP ===============" );
 
@@ -37,62 +40,54 @@ async function init() {
 
     // setup calls
 
-    const expectedResultCount = 15;
+    let controller_item_identifiers = [];
+    let callNum = 0;
 
-    // The propery holding the mapping count
-    const itemCount_identifier = ZoomLibraryInstance.addMappingCountCall(MappedStructs, ["itemCount", []], null, ["itemMap", [0]]);
+    // ---------------------------- LOAD CONTROLLERS START -----------------------
+    // traitControllerCount
+    // traitControllerById
+    // getTraitControllerAccessData
 
-    // Make the same number of calls as "latest items" you want to retrieve
-    const item_identifiers = [];
-    for(let i = 0; i < expectedResultCount; i++) {
-        item_identifiers.push( ZoomLibraryInstance.addType4Call(MappedStructs, ["itemMap", [i]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" ) );
+    // get traitControllerCount, so we know how many results to actually parse
+    controller_item_identifiers.push(
+        ZoomLibraryInstance.addCall(
+            TraitRegistry, ["traitControllerCount", []] 
+        )
+    );
+    callNum++;
+
+    // starts at 1
+    for(let i = 1; i <= 20; i++) {
+
+        // request controller address at ID = i
+        controller_item_identifiers.push( 
+            ZoomLibraryInstance.addCall(
+                TraitRegistry,
+                ["traitControllerById(uint16)", [i]],
+                "traitControllerById(uint16) returns (address)"
+            )
+        );
+        callNum++;
+
+        controller_item_identifiers.push( 
+            ZoomLibraryInstance.addResultReferenceCall(
+                TraitRegistry,
+                ["getTraitControllerAccessData(address)", [ZERO_ADDRESS]],
+                0,
+                "getTraitControllerAccessData(address) returns (uint8[])" 
+            )
+        );
+
+        callNum++;
     }
-    
 
-    // The propery holding the mapping count
-    const itemCount_identifier2 = ZoomLibraryInstance.addMappingCountCall(MappedStructsTwo, ["itemCount", []], null, ["itemMap", [0]]);
-
-    // Make the same number of calls as "latest items" you want to retrieve
-    const item_identifiers2 = [];
-    for(let i = 0; i < expectedResultCount; i++) {
-        item_identifiers2.push( ZoomLibraryInstance.addType4Call(MappedStructsTwo, ["itemMap", [i]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" ) );
-    }
-
-
-    // The propery holding the mapping count
-    const ECAuctionitemCount_identifier = ZoomLibraryInstance.addMappingCountCall(ECAuction, ["bid_count", []], null, ["bid_history", [0]]);
-
-    // Make the same number of calls as "latest items" you want to retrieve
-    const ECAuctionitem_identifiers = [];
-    for(let i = 0; i < expectedResultCount; i++) {
-        ECAuctionitem_identifiers.push( ZoomLibraryInstance.addType4Call(ECAuction, ["bid_history", [i]], "bid_history(uint256) returns ( address, uint256, uint256)" ) );
-    }
-    
-    let cardType = 0;
-    let discount = 100;
-    let methodSig = "getNextAvailableIdOfType(uint256 _card_type) public view returns (uint256)";
-    const getNextAvailableIdOfType0 = ZoomLibraryInstance.addMappingCountCall(ECNFT, ["getNextAvailableIdOfType", [cardType]], methodSig, ["getCardPrice", [0, cardType, discount]] );
-    const getCardPrice0 = ZoomLibraryInstance.addType4Call(ECNFT, ["getCardPrice", [0, cardType, discount]], "getCardPrice(uint256, uint256, uint256) returns (uint256)" )
-
-    cardType = 1;
-    const getNextAvailableIdOfType1 =ZoomLibraryInstance.addMappingCountCall(ECNFT, ["getNextAvailableIdOfType", [cardType]], methodSig, ["getCardPrice", [0, cardType, discount]]);
-    const getCardPrice1 = ZoomLibraryInstance.addType4Call(ECNFT, ["getCardPrice", [0, cardType, discount]], "getCardPrice(uint256, uint256, uint256) returns (uint256)" )
-
-    cardType = 2;
-    const getNextAvailableIdOfType2 =ZoomLibraryInstance.addMappingCountCall(ECNFT, ["getNextAvailableIdOfType", [cardType]], methodSig, ["getCardPrice", [0, cardType, discount]]);
-    const getCardPrice2 = ZoomLibraryInstance.addType4Call(ECNFT, ["getCardPrice", [0, cardType, discount]], "getCardPrice(uint256, uint256, uint256) returns (uint256)" )
-
-    cardType = 3;
-    const getNextAvailableIdOfType3 =ZoomLibraryInstance.addMappingCountCall(ECNFT, ["getNextAvailableIdOfType", [cardType]], methodSig, ["getCardPrice", [0, cardType, discount]]);
-    const getCardPrice3 = ZoomLibraryInstance.addType4Call(ECNFT, ["getCardPrice", [0, cardType, discount]], "getCardPrice(uint256, uint256, uint256) returns (uint256)" )
-    
 
     const ZoomQueryBinary = ZoomLibraryInstance.getZoomCall();
 
-    // console.log( "binary:" );
-    // ZoomLibraryInstance.binary.forEach(item => {
-    //     console.log(item.toString("hex"));
-    // })
+    console.log( "binary:", ZoomQueryBinary.toString("hex") );
+    ZoomLibraryInstance.binary.forEach((item: any) => {
+        console.log(item.toString("hex"));
+    })
 
     console.log("======== ZOOM CALL START ============" );
     console.time('zoomCall')
@@ -102,50 +97,46 @@ async function init() {
     console.timeEnd('zoomCall')
     console.log("======== ZOOM CALL END ==============" );
 
+    console.log("combinedResult", combinedResult);
     const newDataCache = ZoomLibraryInstance.resultsToCache( combinedResult, ZoomQueryBinary );
 
     console.log("======== ZOOM RESULTS ===============" );
 
-    // console.log("itemCount:", parseInt( ZoomLibraryInstance.decodeCall(itemCount_identifier).toString() ) );
-       
-    // for(let i = 0; i < expectedResultCount; i++) {
-    //     console.log("itemMap_"+i+": ", ZoomLibraryInstance.decodeCall(item_identifiers[i]).toString());
-    // }
+    let decodedCallNum = 0;
+    const controllerCount = parseInt(ZoomLibraryInstance.decodeCall(controller_item_identifiers[decodedCallNum++]).toString());
+    const controllers = [];
 
-    // console.log("itemCount:", parseInt( ZoomLibraryInstance.decodeCall(itemCount_identifier2).toString() ) );
-       
-    // for(let i = 0; i < expectedResultCount; i++) {
-    //     console.log("itemMap_"+i+": ", ZoomLibraryInstance.decodeCall(item_identifiers2[i]).toString());
-    // }
+    console.log("controllerCount", controllerCount);
 
-    
-    // console.log("=>>>>>> ECAuction:");
-    // const bidCount = ZoomLibraryInstance.decodeCall(ECAuctionitemCount_identifier).toString();
-    // console.log("bid_count:", parseInt( bidCount ) );
-       
-    // for(let i = 0; i < expectedResultCount; i++) {
-    //     console.log("bid_history["+i+"]: ", ZoomLibraryInstance.decodeCall(ECAuctionitem_identifiers[i]).toString());
-    // }
+    // next calls upto maxControllerCountToLoad +1 = values
+    for(let i = 0; i < 5; i++) {
+        if(i < controllerCount) {
+        
+            const address = ZoomLibraryInstance.decodeCall(
+                controller_item_identifiers[decodedCallNum++]
+            );
 
-    // const lastBid = await ECAuction.bid_history(bidCount);
+            const accessData = ZoomLibraryInstance.decodeCall(
+                controller_item_identifiers[decodedCallNum++]
+            );
 
-    // console.log();
-    // console.log( "validate last bid -> bid_history[0] in zoom / bid_history["+lastBid+"] in web3");
-    // console.log(lastBid.toString());
+            controllers.push({
+                    address:address,
+                    access:accessData
+            });
 
-    
-    console.log("getNextAvailableIdOfType(0)", ZoomLibraryInstance.decodeCall(getNextAvailableIdOfType0).toString());
-    console.log("getNextAvailableIdOfType(1):", ZoomLibraryInstance.decodeCall(getNextAvailableIdOfType1).toString());
-    console.log("getNextAvailableIdOfType(2):", ZoomLibraryInstance.decodeCall(getNextAvailableIdOfType2).toString());
-    console.log("getNextAvailableIdOfType(3):", ZoomLibraryInstance.decodeCall(getNextAvailableIdOfType3).toString());
-
-    console.log("getCardPrice(X, 0, 100):", ZoomLibraryInstance.decodeCall(getCardPrice0).toString());
-    console.log("getCardPrice(X, 1, 100):", ZoomLibraryInstance.decodeCall(getCardPrice1).toString());
-    console.log("getCardPrice(X, 2, 100):", ZoomLibraryInstance.decodeCall(getCardPrice2).toString());
-    console.log("getCardPrice(X, 3, 100):", ZoomLibraryInstance.decodeCall(getCardPrice3).toString());
-
+        } else {
+            // increment so we can move on to the next calls
+            decodedCallNum++;
+        }
+    }
 
     console.log("======== ZOOM RESULTS END ===========" );
+
+    console.log("controllerCount     ", controllerCount);
+    for(let i = 0; i < controllers.length; i++) {
+        console.log("controllers ["+i+"]     ", controllers[i]);
+    }
 
 }
 

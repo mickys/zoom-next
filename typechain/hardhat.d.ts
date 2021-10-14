@@ -32,6 +32,10 @@ declare module "hardhat/types/runtime" {
       name: "Zoom2",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Zoom2__factory>;
+    getContractFactory(
+      name: "Zoom3",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Zoom3__factory>;
 
     // default types
     getContractFactory(

@@ -10,7 +10,7 @@ async function main() {
     const accounts = await ethers.getSigners();
     console.log(accounts[0].address);
 
-    const Artifacts = await ethers.getContractFactory("Zoom2");
+    const Artifacts = await ethers.getContractFactory("Zoom3");
     
     const saleNFTDeployedInstance = await Artifacts.deploy();
 
