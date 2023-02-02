@@ -12,39 +12,28 @@ import { Zoom } from "../src/index";
 import {ethers} from 'ethers';
 
 import ERC721Artifacts from './artifacts/Limited721.json';
-import TraitRegistryArtifacts from './artifacts/TraitRegistry.json';
+import TraitRegistryArtifacts from './artifacts/ECRegistryV2.json';
 import ImplementerUint8Artifacts from './artifacts/ImplementerUint8.json';
 import ImplementerUint256Artifacts from './artifacts/ImplementerUint256.json';
 
 
 import { BitArray, Registry } from "@ethercards/ec-util";
 
-
-import MappedStructsArtifacts from '../artifacts/contracts/Test/MappedStructs.sol/MappedStructs.json';
 import ZoomArtifacts from '../artifacts/contracts/Zoom2.sol/Zoom2.json';
 
 const ethersProvider = new ethers.providers.JsonRpcProvider("https://goerli.nowlive.ro/");
 
 async function init() {
 
-    // 0xAe071C9b3Eb3942160AE6bCA650683518F70127F 0x7b9789cf736bd2f1ba0cfb7504668622b1a3cecb
-
-    const address = "0x0f970a2a396bc779ec18ce05253a18728f2e4b63";
-    const TraitRegistryAddress = "0xFb186901FE74406Da6aa557495B6296b44f16546";
-    const TokenAddr = "0x9fd3154c9a50edfa5c0b8b67e4d9dfdd470f1969";
+    const address = "0x51ed19819b5a960b4b3adfedeedcecab51953010";
+    const TraitRegistryAddress = "0x336B9E1b23c5D574757737152f12DFdeeb55F327";
+    const TokenAddr = "0x24738335491A724aC16c613378a93B88A7871FD2";
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-
-    const ActivatedTraitImplementerAddress = "0x46952565c2b23464D290F04f977df04AB6b51ED3";
-
+    const maxTraitsToLoad = 70;
 
     const ERC721            = new ethers.Contract(TokenAddr, ERC721Artifacts.abi, ethersProvider);
-    const TraitRegistry     = new ethers.Contract(TraitRegistryAddress, TraitRegistryArtifacts, ethersProvider);
-    const ActivatedTraitImplementer     = new ethers.Contract(ActivatedTraitImplementerAddress, ImplementerUint8Artifacts, ethersProvider);
-
-    const maxNumberOfTraitsToLoad = 20;
-
+    const TraitRegistry     = new ethers.Contract(TraitRegistryAddress, TraitRegistryArtifacts.abi, ethersProvider);
     const ZoomContractInstance = new ethers.Contract("0xB93b9e69E5Cb510796Da52Df92860a9E62e678Ae", ZoomArtifacts.abi, ethersProvider);
-
 
     console.log("========== ZOOM SETUP CALL 1 ===============" );
 
@@ -63,16 +52,35 @@ async function init() {
     setupItem_identifiers.push(balanceOfCall);
     setupCallNum++;
 
-    const getTraitsCall = ZoomLibraryInstance.addCall(
-        TraitRegistry,
-        ["getTraits()", []],
- //       "getTraits() returns (traitStruct[] memory)" 
-        "getTraits() returns ((uint16,uint8,uint16,uint16,address,bool,string)[] memory)" 
 
-    )
-    setupItem_identifiers.push(getTraitsCall);
+    const TraitCountCall = ZoomLibraryInstance.addMappingCountCall(
+        // the contract we're calling
+        TraitRegistry,
+        // the method that is returing our ID
+        ["traitCount", []],
+        // signature used to decode the result
+        "traitCount() returns (uint16)",
+        // array of next method calls that will use the result of this current call
+        [
+            { contract: TraitRegistry, mapAndParams: ["traits(uint16)", [0]] },
+        ]
+    );
+    setupItem_identifiers.push(TraitCountCall);
     setupCallNum++;
-    
+
+    for(let i = 0; i < maxTraitsToLoad; i++) {
+
+        const TraitDetailsCall = ZoomLibraryInstance.addCall(
+            TraitRegistry,
+            ["traits(uint16)", [i]],
+            "traits(uint16) returns ((string,address,uint8,uint16,uint16)[] memory)" 
+        )
+
+        setupItem_identifiers.push(TraitDetailsCall);
+        setupCallNum++;
+    }
+
+   
     console.log("callNum", setupCallNum);
     let ZoomQueryBinary = ZoomLibraryInstance.getZoomCall();
 
@@ -89,13 +97,31 @@ async function init() {
     console.log("======== ZOOM RESULTS CALL 1 ===============" );
 
     const ownedNumberOfTokens = ZoomLibraryInstance.decodeCall(setupItem_identifiers[0]).toString();
+    const traitCount = ZoomLibraryInstance.decodeCall(setupItem_identifiers[1]);
+    console.log("traitCount", traitCount);
 
-    traits = ZoomLibraryInstance.decodeCall(setupItem_identifiers[1])[0];
+    for(let i = 0; i < traitCount; i++) {
+        let TraitDetailsCall: any = ZoomLibraryInstance.decodeCall(setupItem_identifiers[i+2]);
+        if (traits.filter(function(e) { return e.name === TraitDetailsCall.name; }).length === 0) {
+            const traitData = {
+                id: i,
+                ... TraitDetailsCall
+            };
+            traits.push(traitData);
+        } else {
+            console.log("skipping trait", TraitDetailsCall)
+        }
+        setupCallNum++;
+    }
+
+    // traits = ZoomLibraryInstance.decodeCall(setupItem_identifiers[1])[0];
     const existingTraitCount = traits.length;
 
-    // console.log("traits", traits);
+    console.log("traits", traits);
     console.log("existingTraitCount", existingTraitCount);
     console.log("ownedNumberOfTokens", ownedNumberOfTokens);
+
+
 
     let callNum = 0;
     let item_identifiers: any = [];
@@ -175,10 +201,9 @@ async function init() {
 
         for(let l = 0; l < traits.length; l++) {
             if(traits[l].implementer != ZERO_ADDRESS) {
-                const traitValueCall = ZoomLibraryInstance.addResultReferenceCall(
+                const traitValueCall = ZoomLibraryInstance.addType5Call(
                     traitImplementers[l],
                     ["getValue(uint16)", [l]],
-                    0,
                     traitImplementerMethodReturn[traits[l].traitType]
                 )
                 item_identifiers.push(traitValueCall);
@@ -238,6 +263,9 @@ async function init() {
                     id: l,
                     value: decodedTraits[l]
                 } 
+
+
+                // myTraits[l] = ZoomLibraryInstance.decodeCall(item_identifiers[l+3]);
             }
         }
 
@@ -252,7 +280,7 @@ async function init() {
 
 
     for(let i = 0; i < tokens.length; i++) {
-        console.log("id", tokens[i].id, tokens[i].uri, tokens[i].traits);
+        console.log("id", tokens[i]);
     }
 
 

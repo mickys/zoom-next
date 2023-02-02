@@ -7,6 +7,7 @@ export type { MappedStructs } from "./MappedStructs";
 export type { Zoom } from "./Zoom";
 export type { Zoom2 } from "./Zoom2";
 export type { Zoom3 } from "./Zoom3";
+export type { Zoom4 } from "./Zoom4";
 
 export { ItemEntity__factory } from "./factories/ItemEntity__factory";
 export { ListContract__factory } from "./factories/ListContract__factory";
@@ -14,3 +15,4 @@ export { MappedStructs__factory } from "./factories/MappedStructs__factory";
 export { Zoom__factory } from "./factories/Zoom__factory";
 export { Zoom2__factory } from "./factories/Zoom2__factory";
 export { Zoom3__factory } from "./factories/Zoom3__factory";
+export { Zoom4__factory } from "./factories/Zoom4__factory";

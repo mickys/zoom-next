@@ -36,6 +36,46 @@ declare module "hardhat/types/runtime" {
       name: "Zoom3",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Zoom3__factory>;
+    getContractFactory(
+      name: "Zoom4",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Zoom4__factory>;
+
+    getContractAt(
+      name: "ItemEntity",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ItemEntity>;
+    getContractAt(
+      name: "ListContract",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ListContract>;
+    getContractAt(
+      name: "MappedStructs",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MappedStructs>;
+    getContractAt(
+      name: "Zoom",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Zoom>;
+    getContractAt(
+      name: "Zoom2",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Zoom2>;
+    getContractAt(
+      name: "Zoom3",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Zoom3>;
+    getContractAt(
+      name: "Zoom4",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Zoom4>;
 
     // default types
     getContractFactory(
@@ -47,5 +87,10 @@ declare module "hardhat/types/runtime" {
       bytecode: ethers.utils.BytesLike,
       signer?: ethers.Signer
     ): Promise<ethers.ContractFactory>;
+    getContractAt(
+      nameOrAbi: string | any[],
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<ethers.Contract>;
   }
 }

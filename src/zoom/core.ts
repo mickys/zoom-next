@@ -220,13 +220,17 @@ export default class Zoom {
                         const resultId = this.getMethodSigPointer(sig);
                         packet.type = 5;
                         packet.resultId = resultId.toString();
-                    } else if(callType === 7) {
+                    
+                    } else if(callType === 6) {
                         // previous call always.
+                        packet.type = 6;
+                        packet.resultId = callIndex;
+                        // packet.resultId = this.lastMappingCountCallID;
+                    
+                    } else if(callType === 7) {
                         packet.type = 7;
-                        // packet.resultId = callIndex - 1;
+                        // mapping call id.
                         packet.resultId = this.lastMappingCountCallID;
-
-                        // console.log("type7 identifier", this.callsData[identifier].key, packet.resultId);
                     }
 
                     callIndex++;
@@ -509,7 +513,7 @@ export default class Zoom {
             // combine our call and data and attach result
             let _key = "0x" + toAddress + "_0x" + callData.toString("hex");
 
-            if (type === 7) {
+            if (type === 6 || type === 7) {
                 let count = 0;
                 let _newkey = _key+"_"+count;
                 
@@ -680,7 +684,16 @@ export default class Zoom {
      * @param type
      * 
      */
-     public addResultReferenceCall(_contract:any, _methodAndParams: any, resultIndex: number, _fullSig: any) {
+    
+    public addResultReferenceCountedCall(_contract:any, _methodAndParams: any, resultIndex: number, _fullSig: any) {
+        return this._addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig, 6);
+    }
+    
+    public addResultReferenceCall(_contract:any, _methodAndParams: any, resultIndex: number, _fullSig: any) {
+        return this._addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig, 7);
+    }
+
+    public _addResultReferenceCall(_contract:any, _methodAndParams: any, resultIndex: number, _fullSig: any, type: number) {
 
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address+"_"+methodSig).toLowerCase();
@@ -707,7 +720,7 @@ export default class Zoom {
             contract: _contract,
             key: _key,
             fullSig: _fullSig,
-            type: 7,
+            type: type,
             resultIndex: resultIndex,
             count: count
         };
@@ -755,13 +768,12 @@ export default class Zoom {
             sig = callDetails.decodeSig;
         }
 
-        if(callDetails.type === 7) {
+        if(callDetails.type === 6 || callDetails.type === 7) {
             const key = callDetails.key+"_"+callDetails.count;
-            // console.log("decode", identifier, key, this.lastCallData[key])
+            // console.log("Decode call 6/7", key, this.lastCallData[key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[key]);
         } else {
-            // console.log("this.lastCallData", this.lastCallData);
-            // console.log("decode", identifier, callDetails.key, this.lastCallData[callDetails.key])
+            // console.log("Decode call else", callDetails.key,this.lastCallData[callDetails.key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[callDetails.key]);
         }
     }
