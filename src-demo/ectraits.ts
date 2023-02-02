@@ -7,7 +7,6 @@
  * @license     MIT
 
 */
-
 import { Zoom } from "../src/index";
 import {ethers} from 'ethers';
 
@@ -86,10 +85,12 @@ async function init() {
 
     console.log("======== ZOOM CALL START CALL 1 ============" );
     console.time('zoomCall')
-
     let combinedResult = await ZoomContractInstance.combine( ZoomQueryBinary );
-
     console.timeEnd('zoomCall')
+
+    const SetupGasCostEstimate = await ZoomContractInstance.estimateGas.combine( ZoomQueryBinary );
+    console.log("Setup gasEstimate:", SetupGasCostEstimate.toNumber());
+
     console.log("======== ZOOM CALL END CALL 1 ==============" );
 
     let newDataCache = ZoomLibraryInstance.resultsToCache( combinedResult, ZoomQueryBinary );
@@ -222,13 +223,11 @@ async function init() {
     // console.log("ZoomQueryBinary", ZoomQueryBinary.toString("hex"));
     combinedResult = await ZoomContractInstance.combine( ZoomQueryBinary );
     // console.log("combinedResult", combinedResult);
-
-    // return;
-
     console.timeEnd('zoomCall')
-    console.log("======== ZOOM CALL END CALL 2 ==============" );
 
-    // console.log("callResult", combinedResult);
+    const LoadGasCostEstimate = await ZoomContractInstance.estimateGas.combine( ZoomQueryBinary );
+    console.log("Load gasEstimate:", LoadGasCostEstimate.toNumber());
+    console.log("======== ZOOM CALL END CALL 2 ==============" );
 
     newDataCache = ZoomLibraryInstance.resultsToCache( combinedResult, ZoomQueryBinary );
 
@@ -276,13 +275,18 @@ async function init() {
         });
     }
 
-    console.log("======== ZOOM RESULTS END ===========" );
+    console.log("======== ZOOM RESULTS END ==================" );
 
 
     for(let i = 0; i < tokens.length; i++) {
-        console.log("id", tokens[i]);
+       console.log("id", tokens[i]);
     }
 
+    console.log("======== REPORT ===========" );
+    console.log("Setup GasCost:        ", SetupGasCostEstimate.toNumber());
+    console.log("Load GasCost:         ", LoadGasCostEstimate.toNumber());
+    console.log("Trait Count:          ", existingTraitCount);
+    console.log("Address NFT Balance:  ", ownedNumberOfTokens);
 
 }
 
