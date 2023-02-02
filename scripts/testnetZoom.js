@@ -35,7 +35,7 @@ async function main() {
    // npx hardhat verify --network rinkeby --contract contracts/Zoom2.sol:Zoom2 "0xC878B3C422BeECB879dE0a2bea01D30C88F0ccdc"
    // npx hardhat verify --network rinkeby --contract contracts/Zoom2.sol:Zoom2 "0x491592F30D9a3d1887F486eA2A3c72ad82fAcF4D"
    
-   // npx hardhat verify --network mainnet --contract contracts/Zoom2.sol:Zoom2 "0x3D4F573904B98066887332EdeF1b3f9b155e8080"
+   // npx hardhat verify --network matic --contract contracts/Zoom3.sol:Zoom3 "0x40faA8d164973Ab39F3cBf6e3876a3130F9c6C77"
 }
 
 main()

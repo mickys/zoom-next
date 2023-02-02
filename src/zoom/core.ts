@@ -53,6 +53,8 @@ export default class Zoom {
     public lastCallData: any;
     public methodSigPointers:[] = [];
 
+    public lastMappingCountCallID = 0;
+
     private addressInAnyResultCache: {} = {};
 
     /**
@@ -149,10 +151,11 @@ export default class Zoom {
      */
      public generateBinaryCalls() {
 
-        let callIndex = -1;
+        let callIndex = 0;
+        this.binary = [];
 
-        Object.keys(this.cache).forEach((call) => {
-
+        Object.keys(this.cache).forEach((call, idx) => {
+            // console.log("idx", idx)
             const str = call.split("_");
             // split address from data
             const callToAddress = str[0];
@@ -162,7 +165,6 @@ export default class Zoom {
                 count = str[2];
             }
 
-            callIndex++;
             
             // convert our hex string to a buffer so we can actually use it
             const callData = new ByteArray( Buffer.from(this.removeZeroX(callDataString), "hex") );
@@ -204,6 +206,9 @@ export default class Zoom {
                             this.setMethodSigPointer(this.callsData[identifier].mapkey[y], callIndex);
                         }
                         packet.type = 3;
+                        this.lastMappingCountCallID = callIndex;
+
+                        // console.log("type3 identifier", this.callsData[identifier].key, callIndex);
 
                     } else if(callType === 4) {
                         // read method sig and find counter
@@ -215,12 +220,19 @@ export default class Zoom {
                         const resultId = this.getMethodSigPointer(sig);
                         packet.type = 5;
                         packet.resultId = resultId.toString();
-                    } else if(callType === 6) {
+                    } else if(callType === 7) {
                         // previous call always.
-                        packet.type = 6;
-                        packet.resultId = callIndex - 1;
+                        packet.type = 7;
+                        // packet.resultId = callIndex - 1;
+                        packet.resultId = this.lastMappingCountCallID;
+
+                        // console.log("type7 identifier", this.callsData[identifier].key, packet.resultId);
                     }
+
+                    callIndex++;
                 }
+                
+                // console.log("encoded:", idx, callIndex, this.binary.length, packet.type, this.createBinaryCallByteArray(packet, callData).toString("hex"));
 
                 this.binary.push(this.createBinaryCallByteArray(packet, callData));
             }
@@ -464,7 +476,7 @@ export default class Zoom {
 
             let toAddress: string;
 
-            if (type === 1 || type === 3 || type === 4 || type === 5 || type === 6) {
+            if (type === 1 || type === 3 || type === 4 || type === 5 || type === 6 || type === 7) {
                 
                 // bypass 5 bytes used in type 2 for result id and offset and 1 byte for unused space
                 bytes.advanceReadPositionBy(5);
@@ -497,7 +509,7 @@ export default class Zoom {
             // combine our call and data and attach result
             let _key = "0x" + toAddress + "_0x" + callData.toString("hex");
 
-            if (type === 6) {
+            if (type === 7) {
                 let count = 0;
                 let _newkey = _key+"_"+count;
                 
@@ -695,7 +707,7 @@ export default class Zoom {
             contract: _contract,
             key: _key,
             fullSig: _fullSig,
-            type: 6,
+            type: 7,
             resultIndex: resultIndex,
             count: count
         };
@@ -743,10 +755,13 @@ export default class Zoom {
             sig = callDetails.decodeSig;
         }
 
-        if(callDetails.type === 6) {
+        if(callDetails.type === 7) {
             const key = callDetails.key+"_"+callDetails.count;
+            // console.log("decode", identifier, key, this.lastCallData[key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[key]);
         } else {
+            // console.log("this.lastCallData", this.lastCallData);
+            // console.log("decode", identifier, callDetails.key, this.lastCallData[callDetails.key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[callDetails.key]);
         }
     }

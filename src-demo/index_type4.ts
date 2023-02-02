@@ -43,17 +43,17 @@ async function init() {
     const itemCount_identifier = ZoomLibraryInstance.addMappingCountCall(MappedStructs, ["itemCount", []], null, ["itemMap", [0]]);
 
     // Make the same number of calls as "latest items" you want to retrieve
-    const item_identifiers = [];
+    const item_identifiers: any = [];
     for(let i = 0; i < expectedResultCount; i++) {
         item_identifiers.push( ZoomLibraryInstance.addType4Call(MappedStructs, ["itemMap", [i]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" ) );
     }
     
 
     // The propery holding the mapping count
-    const itemCount_identifier2 = ZoomLibraryInstance.addMappingCountCall(MappedStructsTwo, ["itemCount", []], null, ["itemMap", [0]]);
+    const itemCount_identifier2: any = ZoomLibraryInstance.addMappingCountCall(MappedStructsTwo, ["itemCount", []], null, ["itemMap", [0]]);
 
     // Make the same number of calls as "latest items" you want to retrieve
-    const item_identifiers2 = [];
+    const item_identifiers2: any = [];
     for(let i = 0; i < expectedResultCount; i++) {
         item_identifiers2.push( ZoomLibraryInstance.addType4Call(MappedStructsTwo, ["itemMap", [i]], "itemMap(uint256) returns (string, address, uint256, uint16, bool)" ) );
     }
@@ -63,7 +63,7 @@ async function init() {
     const ECAuctionitemCount_identifier = ZoomLibraryInstance.addMappingCountCall(ECAuction, ["bid_count", []], null, ["bid_history", [0]]);
 
     // Make the same number of calls as "latest items" you want to retrieve
-    const ECAuctionitem_identifiers = [];
+    const ECAuctionitem_identifiers: any = [];
     for(let i = 0; i < expectedResultCount; i++) {
         ECAuctionitem_identifiers.push( ZoomLibraryInstance.addType4Call(ECAuction, ["bid_history", [i]], "bid_history(uint256) returns ( address, uint256, uint256)" ) );
     }

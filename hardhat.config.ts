@@ -16,6 +16,7 @@ config();
 const INFURA_ID = process.env.INFURA_API_KEY;
 const OWNER_PRIVATE_KEY = process.env.PRIVATE_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -33,7 +34,8 @@ task(
 // Go to https://hardhat.org/config/ to learn more
 
 // const gasPrice = 50000000000; // 50 GWEI
-const gasPrice =    15000000000; // 25 GWEI
+// const gasPrice = 100000000000; // 100 GWEI
+   const gasPrice =  30000000000; // 100 GWEI
 // const gasLimit = 12450000; // mainnet
 const gasLimit = 9500000;  // rinkeby
 
@@ -61,10 +63,23 @@ module.exports = {
       chainId: 1337,
       gasPrice: gasPrice
     },
+    mumbai: {
+      url: `https://rpc-mumbai.maticvigil.com/`,
+      accounts: [OWNER_PRIVATE_KEY],
+      chainId: 80001,
+      // gasPrice: gasPrice
+    },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${INFURA_ID}`,
       accounts: [OWNER_PRIVATE_KEY],
       chainId: 1,
+      gasPrice: gasPrice
+    },
+    goerli: {
+      url: `https://goerli.infura.io/v3/${INFURA_ID}`,
+      // url: `https://rinkeby.nowlive.ro/`,
+      accounts: [OWNER_PRIVATE_KEY],
+      chainId: 5,
       gasPrice: gasPrice
     },
     rinkeby: {
@@ -74,12 +89,25 @@ module.exports = {
       chainId: 4,
       gasPrice: gasPrice
     },
+    sepolia: {
+      url: `https://sepolia.nowlive.ro/`,
+      accounts: [OWNER_PRIVATE_KEY],
+      chainId: 11155111,
+      gasPrice: gasPrice
+    },
     kovan: {
       url: `https://kovan.infura.io/v3/${INFURA_ID}`,
       accounts: [OWNER_PRIVATE_KEY],
       chainId: 42,
       gasPrice: gasPrice
-    }
+    },
+    matic: {
+      // url: `https://polygon-rpc.com/`,
+      url: `https://polygon-mainnet.infura.io/v3/1fc164b9a9054e4bab0f54e3d8d312b8`,
+      accounts: [OWNER_PRIVATE_KEY],
+      chainId: 137,
+      gasPrice: gasPrice
+    },  
   },
   etherscan: {
     // Your API key for Etherscan
@@ -87,6 +115,8 @@ module.exports = {
     // url: "https://api-rinkeby.etherscan.io/",
     url: "https://api.etherscan.io/",
     apiKey: ETHERSCAN_API_KEY,
+    // url: "https://api.polygonscan.io/",
+    // apiKey: POLYGONSCAN_API_KEY
   },
   solidity: {
     version: "0.7.5",

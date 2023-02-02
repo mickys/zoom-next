@@ -61,7 +61,7 @@
   "dependencies": {
     "@ethercards/ec-util": "^1.0.4",
     "@nomiclabs/hardhat-ethers": "^2.0.1",
-    "@nomiclabs/hardhat-etherscan": "^2.1.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.4",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "bitwise": "^2.1.0",
     "crypto-js": "^4.0.0",
@@ -69,12 +69,13 @@
     "eth-sig-util": "^3.0.1",
     "ethereum-waffle": "^3.2.2",
     "ethereumjs-util": "^5.1.2",
-    "ethers": "^5.2.0",
+    "ethers": "^5.7.2",
     "ethjs": "^0.2.8",
     "hardhat": "^2.2.1",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-deploy": "^0.7.0-beta.58",
-    "hardhat-tracer": "^1.0.0-alpha.6"
+    "hardhat-tracer": "^1.0.0-alpha.6",
+    "underscore": "^1.13.6"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^19.0.0",

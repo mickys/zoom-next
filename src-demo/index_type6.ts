@@ -34,7 +34,7 @@ async function init() {
 
     // setup calls
 
-    let controller_item_identifiers = [];
+    let controller_item_identifiers: any = [];
     let callNum = 0;
 
     // ---------------------------- LOAD CONTROLLERS START -----------------------
@@ -99,7 +99,7 @@ async function init() {
     console.log("newDataCache", newDataCache);
     let decodedCallNum = 0;
     const controllerCount = parseInt(ZoomLibraryInstance.decodeCall(controller_item_identifiers[decodedCallNum++]).toString());
-    const controllers = [];
+    const controllers: any = [];
 
     console.log("controllerCount", controllerCount);
 
