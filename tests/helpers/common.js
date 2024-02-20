@@ -625,32 +625,3 @@ module.exports = {
   ROLE,
   Data
 }
-
-/*
-// await ethers.provider.getBlockNumber().then((blockNumber) => {
-//   console.log("Current block number: " + blockNumber);
-// });
-
-// await tokenContract.filters.Transfer(ZERO_ADDRESS, (data) => {
-//   console.log("Transfer: " + util.inspect(data));
-// });
-// const iface = new ethers.utils.Interface(tokenContract.interface.abi);
-// console.log("tokenContract.interface: " + util.inspect(tokenContract.interface));
-
-// let x = tokenContract.filters.Transfer(ZERO_ADDRESS);
-// console.log("        * Transfer: " + JSON.stringify(x));
-
-// tokenContract.filters.forEach((x) => {
-//   console.log("x: " + x);
-// });
-
-
-// provider.getTransactionReceipt(transactionHash).then(receipt => {
-//   const logs = receipt.logs.filter(log => topics.some(t => t === log.topics[0]));
-//   console.log('Printing array of events:');
-//   const events = logs.map((log) => {
-//     return iface.parseLog(log);
-//   });
-//   console.log(events);
-// });
-*/

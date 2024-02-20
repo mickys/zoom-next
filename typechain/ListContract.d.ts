@@ -17,7 +17,7 @@ import {
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
-import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
+import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface ListContractInterface extends ethers.utils.Interface {
   functions: {
@@ -79,6 +79,14 @@ interface ListContractInterface extends ethers.utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "EventNewChildItem"): EventFragment;
 }
+
+export type EventNewChildItemEvent = TypedEvent<
+  [string, string, BigNumber] & {
+    _name: string;
+    _address: string;
+    _index: BigNumber;
+  }
+>;
 
 export class ListContract extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -234,6 +242,15 @@ export class ListContract extends BaseContract {
   };
 
   filters: {
+    "EventNewChildItem(string,address,uint256)"(
+      _name?: null,
+      _address?: null,
+      _index?: null
+    ): TypedEventFilter<
+      [string, string, BigNumber],
+      { _name: string; _address: string; _index: BigNumber }
+    >;
+
     EventNewChildItem(
       _name?: null,
       _address?: null,

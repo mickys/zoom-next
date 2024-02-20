@@ -1,4 +1,8 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 /*
 
  * source       https://github.com/mickys/zoom-next/
@@ -7,14 +11,9 @@
  * @author      Micky Socaci <micky@binarzone.com>
  * @license     MIT
  
- based on https://github.com/ethereum/web3.js/blob/develop/lib/web3/httpprovider.js
 */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const crypto_js_1 = __importDefault(require("crypto-js"));
 const ByteArray_1 = __importDefault(require("../utils/ByteArray"));
+const MD5_1 = __importDefault(require("../utils/MD5"));
 class Zoom {
     /**
      *
@@ -31,6 +30,7 @@ class Zoom {
         this.callsData = {};
         this.binary = [];
         this.methodSigPointers = [];
+        this.lastMappingCountCallID = 0;
         this.addressInAnyResultCache = {};
         if (typeof options !== "undefined") {
             this.options = Object.assign({}, options);
@@ -101,8 +101,10 @@ class Zoom {
      * Iterate through our calls and create binaries
      */
     generateBinaryCalls() {
-        let callIndex = -1;
-        Object.keys(this.cache).forEach((call) => {
+        let callIndex = 0;
+        this.binary = [];
+        Object.keys(this.cache).forEach((call, idx) => {
+            // console.log("idx", idx)
             const str = call.split("_");
             // split address from data
             const callToAddress = str[0];
@@ -111,7 +113,6 @@ class Zoom {
             if (typeof str[2] !== "undefined") {
                 count = str[2];
             }
-            callIndex++;
             // convert our hex string to a buffer so we can actually use it
             const callData = new ByteArray_1.default(Buffer.from(this.removeZeroX(callDataString), "hex"));
             const packet = {
@@ -125,7 +126,7 @@ class Zoom {
             if (count) {
                 _key = (callToAddress + "_" + callDataString + "_" + count).toLowerCase();
             }
-            const identifier = crypto_js_1.default.MD5(_key);
+            const identifier = MD5_1.default.hash(_key);
             if (typeof this.callsData[identifier] !== "undefined") {
                 const callType = this.callsData[identifier].type;
                 const sig = this.toMethodSignature(callData.toString("hex"));
@@ -144,6 +145,8 @@ class Zoom {
                             this.setMethodSigPointer(this.callsData[identifier].mapkey[y], callIndex);
                         }
                         packet.type = 3;
+                        this.lastMappingCountCallID = callIndex;
+                        // console.log("type3 identifier", this.callsData[identifier].key, callIndex);
                     }
                     else if (callType === 4) {
                         // read method sig and find counter
@@ -160,67 +163,21 @@ class Zoom {
                     else if (callType === 6) {
                         // previous call always.
                         packet.type = 6;
-                        packet.resultId = callIndex - 1;
+                        packet.resultId = callIndex;
+                        // packet.resultId = this.lastMappingCountCallID;
                     }
+                    else if (callType === 7) {
+                        packet.type = 7;
+                        // mapping call id.
+                        packet.resultId = this.lastMappingCountCallID;
+                    }
+                    callIndex++;
                 }
+                // console.log("encoded:", idx, callIndex, this.binary.length, packet.type, this.createBinaryCallByteArray(packet, callData).toString("hex"));
                 this.binary.push(this.createBinaryCallByteArray(packet, callData));
             }
         });
     }
-    /**
-     * Iterate through our calls and create binaries
-     */
-    // public generateBinaryCalls_Old() {
-    //     // clean our address cache
-    //     this.addressInAnyResultCache = {};
-    //     let callIndex = -1;
-    //     Object.keys(this.calls).forEach((callToAddress) => {
-    //         // for each grouped value
-    //         this.calls[callToAddress].forEach((callDataString, subIndex) => {
-    //             callIndex++;
-    //             // convert our hex string to a buffer so we can actually use it
-    //             const callData = new ByteArray( Buffer.from(this.removeZeroX(callDataString), "hex") );
-    //             const packet: packetFormat = {
-    //                 type: 1,
-    //                 dataLength: callData.length,
-    //                 resultId: 0,
-    //                 offset: 0,
-    //                 toAddress: new ByteArray( Buffer.from(this.removeZeroX(callToAddress), "hex") ), // key contains to address
-    //             };
-    //             // if active then try to build type 2 calls
-    //             if (this.options.use_reference_calls === true) {
-    //                 const { found, callNum, bytePosition } = this.findToAddressInAnyResult(callToAddress);
-    //                 if (found === true) {
-    //                     packet.type = 2;
-    //                     packet.toAddress = new ByteArray(Buffer.alloc(0));
-    //                     packet.resultId = callNum.toString();
-    //                     packet.offset = bytePosition.toString();
-    //                 }
-    //             }
-    //             const _key = (callToAddress+"_"+callDataString).toLowerCase();
-    //             const identifier = CryptoJS.MD5(_key);
-    //             const callType = this.callsData[identifier].type;
-    //             const sig = this.toMethodSignature(callData.toString("hex"));
-    //             // console.log("sig", sig, "callType", callType, "callIndex", callIndex, "callDataString", callDataString);
-    //             if(typeof callType !== "undefined" ) {
-    //                 if(callType == 3) {
-    //                     const mapkey = this.toMethodSignature(this.callsData[identifier].mapkey[0]);
-    //                     // read method sig and set internal result id
-    //                      this.setMethodSigPointer(mapkey, callIndex);
-    //                     packet.type = 3;
-    //                 } else if(callType == 4) {
-    //                     // read method sig and find counter
-    //                     const resultId = this.getMethodSigPointer(sig);
-    //                     packet.type = 4;
-    //                     // console.log("??? sig ", sig);
-    //                     // console.log("resultId", resultId);
-    //                     packet.resultId = resultId.toString();
-    //                 }
-    //             }
-    //             this.binary.push(this.createBinaryCallByteArray(packet, callData));
-    //         });
-    //     });
-    // }
     setMethodSigPointer(sig, nr) {
         this.methodSigPointers[sig] = nr;
     }
@@ -343,7 +300,7 @@ class Zoom {
             // 2 bytes - uint16 call_data length
             const callDataLength = bytes.readUnsignedShort();
             let toAddress;
-            if (type === 1 || type === 3 || type === 4 || type === 5 || type === 6) {
+            if (type === 1 || type === 3 || type === 4 || type === 5 || type === 6 || type === 7) {
                 // bypass 5 bytes used in type 2 for result id and offset and 1 byte for unused space
                 bytes.advanceReadPositionBy(5);
                 // normal call that contains toAddress and callData
@@ -364,7 +321,7 @@ class Zoom {
             bytes.readBytes(callData, 0, callDataLength);
             // combine our call and data and attach result
             let _key = "0x" + toAddress + "_0x" + callData.toString("hex");
-            if (type === 6) {
+            if (type === 6 || type === 7) {
                 let count = 0;
                 let _newkey = _key + "_" + count;
                 if (typeof newData[_key] === "undefined") {
@@ -422,7 +379,7 @@ class Zoom {
     addCall(_contract, _methodAndParams, _fullSig) {
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address + "_" + methodSig).toLowerCase();
-        const identifier = crypto_js_1.default.MD5(_key);
+        const identifier = MD5_1.default.hash(_key);
         if (typeof this.calls[_key] !== "undefined") {
             throw new Error("key already in use[" + _key + "]");
         }
@@ -446,7 +403,7 @@ class Zoom {
     addTypeCall(_type, _contract, _methodAndParams, _fullSig) {
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address + "_" + methodSig).toLowerCase();
-        const identifier = crypto_js_1.default.MD5(_key);
+        const identifier = MD5_1.default.hash(_key);
         this.calls[_key] = "";
         if (typeof _fullSig === "undefined") {
             _fullSig = methodSig;
@@ -470,7 +427,7 @@ class Zoom {
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address + "_" + methodSig).toLowerCase();
         this.calls[_key] = "";
-        const identifier = crypto_js_1.default.MD5(_key);
+        const identifier = MD5_1.default.hash(_key);
         const _mapkeys = [];
         for (let i = 0; i < sigs.length; i++) {
             const resolveSig = sigs[i].contract.interface.encodeFunctionData(...sigs[i].mapAndParams);
@@ -495,7 +452,13 @@ class Zoom {
      * @param type
      *
      */
+    addResultReferenceCountedCall(_contract, _methodAndParams, resultIndex, _fullSig) {
+        return this._addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig, 6);
+    }
     addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig) {
+        return this._addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig, 7);
+    }
+    _addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig, type) {
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address + "_" + methodSig).toLowerCase();
         if (typeof _fullSig === "undefined") {
@@ -509,40 +472,19 @@ class Zoom {
             count = ++this.calls[_key];
         }
         const _newkey = (_contract.address + "_" + methodSig + "_" + count).toLowerCase();
-        const oldidentifier = crypto_js_1.default.MD5(_key);
-        const identifier = crypto_js_1.default.MD5(_newkey);
+        const oldidentifier = MD5_1.default.hash(_key);
+        const identifier = MD5_1.default.hash(_newkey);
         this.calls[_newkey] = "";
         // console.log("_newkey", _newkey, "oldidentifier", oldidentifier.toString(), "identifier", identifier.toString());
         this.callsData[identifier] = {
             contract: _contract,
             key: _key,
             fullSig: _fullSig,
-            type: 6,
+            type: type,
             resultIndex: resultIndex,
             count: count
         };
         return identifier;
-        // const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
-        // const _key = (_contract.address+"_"+methodSig).toLowerCase();
-        // this.calls[_key] = "";
-        // const identifier = CryptoJS.MD5(_key);
-        // const _mapkeys = [];
-        // for(let i = 0; i < sigs.length; i++) {
-        //     const resolveSig = sigs[i].contract.interface.encodeFunctionData(...sigs[i].mapAndParams);
-        //     _mapkeys.push((this.toMethodSignature(resolveSig.toString("hex"))).toLowerCase());
-        // }
-        // this.callsData[identifier] = {
-        //     contract: _contract,
-        //     key: _key,
-        //     mapkey: _mapkeys,
-        //     fullSig: methodSig,
-        //     type: 2,
-        //     resultIndex: resultIndex
-        // };
-        // if(_fullSig !== null) {
-        //     this.callsData[identifier].decodeSig = _fullSig;
-        // }
-        // return identifier;
     }
     /**
      * Decode a call to an address
@@ -556,11 +498,13 @@ class Zoom {
         if (typeof callDetails.decodeSig !== "undefined") {
             sig = callDetails.decodeSig;
         }
-        if (callDetails.type === 6) {
+        if (callDetails.type === 6 || callDetails.type === 7) {
             const key = callDetails.key + "_" + callDetails.count;
+            // console.log("Decode call 6/7", key, this.lastCallData[key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[key]);
         }
         else {
+            // console.log("Decode call else", callDetails.key,this.lastCallData[callDetails.key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[callDetails.key]);
         }
     }

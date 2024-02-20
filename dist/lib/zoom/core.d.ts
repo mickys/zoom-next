@@ -27,6 +27,7 @@ export default class Zoom {
     binary: any;
     lastCallData: any;
     methodSigPointers: [];
+    lastMappingCountCallID: number;
     private addressInAnyResultCache;
     /**
      *
@@ -55,9 +56,6 @@ export default class Zoom {
      * Iterate through our calls and create binaries
      */
     generateBinaryCalls(): void;
-    /**
-     * Iterate through our calls and create binaries
-     */
     setMethodSigPointer(sig: string, nr: number): void;
     getMethodSigPointer(sig: string): any;
     /**
@@ -106,9 +104,9 @@ export default class Zoom {
      *
      * @returns call indentifier
      */
-    addCall(_contract: any, _methodAndParams: any, _fullSig?: string): any;
-    addType4Call(_contract: any, _methodAndParams: any, _fullSig?: string): any;
-    addType5Call(_contract: any, _methodAndParams: any, _fullSig?: string): any;
+    addCall(_contract: any, _methodAndParams: any, _fullSig?: string): string;
+    addType4Call(_contract: any, _methodAndParams: any, _fullSig?: string): string;
+    addType5Call(_contract: any, _methodAndParams: any, _fullSig?: string): string;
     private addTypeCall;
     /**
      * Add a special view call
@@ -117,7 +115,7 @@ export default class Zoom {
      * @param type
      *
      */
-    addMappingCountCall(_contract: any, _methodAndParams: any, _fullSig: any, sigs: any[]): any;
+    addMappingCountCall(_contract: any, _methodAndParams: any, _fullSig: any, sigs: any[]): string;
     /**
      * Add a special view call
      *
@@ -125,7 +123,9 @@ export default class Zoom {
      * @param type
      *
      */
-    addResultReferenceCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any): any;
+    addResultReferenceCountedCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any): string;
+    addResultReferenceCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any): string;
+    _addResultReferenceCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any, type: number): string;
     /**
      * Decode a call to an address
      *

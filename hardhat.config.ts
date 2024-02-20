@@ -14,9 +14,12 @@ const { config } = require("dotenv");
 config();
 
 const INFURA_ID = process.env.INFURA_API_KEY;
-const OWNER_PRIVATE_KEY = process.env.PRIVATE_KEY;
+const OWNER_PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
+const ARBITRUM_API_KEY = process.env.ARBITRUM_API_KEY;
+const OPTIMISM_API_KEY = process.env.OPTIMISM_API_KEY;
+
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -77,13 +80,11 @@ module.exports = {
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${INFURA_ID}`,
-      // url: `https://rinkeby.nowlive.ro/`,
       accounts: [OWNER_PRIVATE_KEY],
       chainId: 5,
       gasPrice: gasPrice
     },
     rinkeby: {
-      // url: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
       url: `https://rinkeby.nowlive.ro/`,
       accounts: [OWNER_PRIVATE_KEY],
       chainId: 4,
@@ -103,7 +104,7 @@ module.exports = {
     },
     matic: {
       // url: `https://polygon-rpc.com/`,
-      url: `https://polygon-mainnet.infura.io/v3/1fc164b9a9054e4bab0f54e3d8d312b8`,
+      url: `https://polygon-mainnet.infura.io/v3/${INFURA_ID}`,
       accounts: [OWNER_PRIVATE_KEY],
       chainId: 137,
       gasPrice: gasPrice
@@ -112,11 +113,16 @@ module.exports = {
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    // url: "https://api-rinkeby.etherscan.io/",
-    url: "https://api.etherscan.io/",
-    apiKey: ETHERSCAN_API_KEY,
-    // url: "https://api.polygonscan.io/",
-    // apiKey: POLYGONSCAN_API_KEY
+    apiKey: {
+      mainnet: ETHERSCAN_API_KEY,
+      goerli:  ETHERSCAN_API_KEY,
+      polygon: POLYGONSCAN_API_KEY,
+      sepolia: ETHERSCAN_API_KEY,
+      polygonMumbai: POLYGONSCAN_API_KEY,
+      arbitrum_goerli: ARBITRUM_API_KEY,
+      optimistic_goerli: OPTIMISM_API_KEY,
+      arbitrum_sepolia: ARBITRUM_API_KEY,
+    },
   },
   solidity: {
     version: "0.7.5",

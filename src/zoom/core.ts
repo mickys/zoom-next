@@ -6,11 +6,9 @@
  * @author      Micky Socaci <micky@binarzone.com>
  * @license     MIT
  
- based on https://github.com/ethereum/web3.js/blob/develop/lib/web3/httpprovider.js
 */
-
-import CryptoJS from "crypto-js";
 import ByteArray from "../utils/ByteArray";
+import MD5 from "../utils/MD5";
 
 /**
  * Zoom Constructor options
@@ -181,7 +179,7 @@ export default class Zoom {
             if(count) {
                 _key = (callToAddress+"_"+callDataString+"_"+count).toLowerCase();
             }
-            const identifier = CryptoJS.MD5(_key);
+            const identifier = MD5.hash(_key);
 
             if(typeof this.callsData[identifier] !== "undefined") {
 
@@ -242,76 +240,6 @@ export default class Zoom {
             }
         });
     }
-
-
-    /** 
-     * Iterate through our calls and create binaries
-     */
-    // public generateBinaryCalls_Old() {
-
-    //     // clean our address cache
-    //     this.addressInAnyResultCache = {};
-
-    //     let callIndex = -1;
-
-    //     Object.keys(this.calls).forEach((callToAddress) => {
-
-    //         // for each grouped value
-    //         this.calls[callToAddress].forEach((callDataString, subIndex) => {
-    //             callIndex++;
-                
-    //             // convert our hex string to a buffer so we can actually use it
-    //             const callData = new ByteArray( Buffer.from(this.removeZeroX(callDataString), "hex") );
-
-    //             const packet: packetFormat = {
-    //                 type: 1,
-    //                 dataLength: callData.length,
-    //                 resultId: 0,
-    //                 offset: 0,
-    //                 toAddress: new ByteArray( Buffer.from(this.removeZeroX(callToAddress), "hex") ), // key contains to address
-    //             };
-
-    //             // if active then try to build type 2 calls
-    //             if (this.options.use_reference_calls === true) {
-    //                 const { found, callNum, bytePosition } = this.findToAddressInAnyResult(callToAddress);
-
-    //                 if (found === true) {
-    //                     packet.type = 2;
-    //                     packet.toAddress = new ByteArray(Buffer.alloc(0));
-    //                     packet.resultId = callNum.toString();
-    //                     packet.offset = bytePosition.toString();
-    //                 }
-    //             }
-
-    //             const _key = (callToAddress+"_"+callDataString).toLowerCase();
-    //             const identifier = CryptoJS.MD5(_key);
-    //             const callType = this.callsData[identifier].type;
-    //             const sig = this.toMethodSignature(callData.toString("hex"));
-    //             // console.log("sig", sig, "callType", callType, "callIndex", callIndex, "callDataString", callDataString);
-
-    //             if(typeof callType !== "undefined" ) {
-                    
-    //                 if(callType == 3) {
-    //                     const mapkey = this.toMethodSignature(this.callsData[identifier].mapkey[0]);
-    //                     // read method sig and set internal result id
-    //                      this.setMethodSigPointer(mapkey, callIndex);
-    //                     packet.type = 3;
-
-    //                 } else if(callType == 4) {
-    //                     // read method sig and find counter
-    //                     const resultId = this.getMethodSigPointer(sig);
-    //                     packet.type = 4;
-    //                     // console.log("??? sig ", sig);
-    //                     // console.log("resultId", resultId);
-    //                     packet.resultId = resultId.toString();
-    //                 }
-    //             }
-
-    //             this.binary.push(this.createBinaryCallByteArray(packet, callData));
-
-    //         });
-    //     });
-    // }
 
     public setMethodSigPointer(sig:string, nr:number) {
         this.methodSigPointers[sig] = nr;
@@ -587,11 +515,11 @@ export default class Zoom {
      * 
      * @returns call indentifier
      */
-    public addCall(_contract:any, _methodAndParams: any, _fullSig?: string) {
+    public addCall(_contract:any, _methodAndParams: any, _fullSig?: string): string {
 
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address+"_"+methodSig).toLowerCase();
-        const identifier = CryptoJS.MD5(_key);
+        const identifier = MD5.hash(_key);
 
         if(typeof this.calls[_key] !== "undefined") {
             throw new Error("key already in use["+_key+"]");
@@ -623,7 +551,7 @@ export default class Zoom {
 
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address+"_"+methodSig).toLowerCase();
-        const identifier = CryptoJS.MD5(_key);
+        const identifier = MD5.hash(_key);
 
         this.calls[_key] = "";
 
@@ -653,7 +581,7 @@ export default class Zoom {
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address+"_"+methodSig).toLowerCase();
         this.calls[_key] = "";
-        const identifier = CryptoJS.MD5(_key);
+        const identifier = MD5.hash(_key);
         const _mapkeys = [];
 
         for(let i = 0; i < sigs.length; i++) {
@@ -710,8 +638,8 @@ export default class Zoom {
         }
 
         const _newkey = (_contract.address+"_"+methodSig+"_"+count).toLowerCase();
-        const oldidentifier = CryptoJS.MD5(_key);
-        const identifier = CryptoJS.MD5(_newkey);
+        const oldidentifier = MD5.hash(_key);
+        const identifier = MD5.hash(_newkey);
         this.calls[_newkey] = "";
 
         // console.log("_newkey", _newkey, "oldidentifier", oldidentifier.toString(), "identifier", identifier.toString());
@@ -726,33 +654,6 @@ export default class Zoom {
         };
 
         return identifier;
-
-        // const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
-        // const _key = (_contract.address+"_"+methodSig).toLowerCase();
-        // this.calls[_key] = "";
-        // const identifier = CryptoJS.MD5(_key);
-        // const _mapkeys = [];
-
-        // for(let i = 0; i < sigs.length; i++) {
-        //     const resolveSig = sigs[i].contract.interface.encodeFunctionData(...sigs[i].mapAndParams);
-        //     _mapkeys.push((this.toMethodSignature(resolveSig.toString("hex"))).toLowerCase());
-        // }
-
-        // this.callsData[identifier] = {
-        //     contract: _contract,
-        //     key: _key,
-        //     mapkey: _mapkeys,
-        //     fullSig: methodSig,
-        //     type: 2,
-        //     resultIndex: resultIndex
-        // };
-
-        // if(_fullSig !== null) {
-        //     this.callsData[identifier].decodeSig = _fullSig;
-        // }
-        
-
-        // return identifier;
     }
 
     /** 

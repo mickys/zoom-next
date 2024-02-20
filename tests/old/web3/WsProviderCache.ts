@@ -5,17 +5,15 @@ let Ws: any = null;
 let parseURL: any = null;
 let myBtoa: any = null;
 
+// @ts-ignore: WebSocket
+if (typeof window !== 'undefined' && typeof window.WebSocket !== 'undefined') {
     // @ts-ignore: WebSocket
-    /*
-    if (typeof window !== 'undefined' && typeof window.WebSocket !== 'undefined') {
-        // @ts-ignore: WebSocket
-        Ws = window.WebSocket;
-        myBtoa = btoa;
-        parseURL = (iurl: any) => {
-            return new URL(iurl);
-        };
-    } else {
-    */
+    Ws = window.WebSocket;
+    myBtoa = btoa;
+    parseURL = (iurl: any) => {
+        return new URL(iurl);
+    };
+} else {
     Ws = require('websocket').w3cwebsocket;
     myBtoa = (str: any) => {
         return new Buffer(str).toString('base64');
@@ -31,12 +29,10 @@ let myBtoa: any = null;
         // Web3 supports Node.js 5, so fall back to the legacy URL API if necessary
         parseURL = require('url').parse;
     }
-
-    // }
+}
 // Default connection ws://localhost:8546
 
-export default class WsProvider {
-
+class WsProviderCache {
     public responseCallbacks: any;
     public notificationCallbacks: any;
     public customTimeout: any;
@@ -246,6 +242,12 @@ export default class WsProvider {
             if (this.inCacheByKey(cacheKey)) {
                 callback(null, this.fromCacheByKey(cacheKey, payload));
                 return;
+            } else {
+                /*
+                if (payload[0] === undefined ) {
+                    console.log("not in cache:", JSON.stringify(payload));
+                }
+                */
             }
         }
 
@@ -457,6 +459,7 @@ export default class WsProvider {
      */
     public inCache(payload: any): boolean {
         const cacheKey = this.getCacheKey(payload);
+        console.log("inCache", cacheKey, JSON.stringify(payload) );
         if (this.cache.hasOwnProperty(cacheKey)) {
             return true;
         }
@@ -512,3 +515,4 @@ export default class WsProvider {
         return key;
     }
 }
+export default WsProviderCache;

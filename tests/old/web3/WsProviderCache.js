@@ -1,47 +1,47 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const _ = require('underscore');
-const errors = require('web3-core-helpers').errors;
-let Ws = null;
-let parseURL = null;
-let myBtoa = null;
+exports.__esModule = true;
+var _ = require('underscore');
+var errors = require('web3-core-helpers').errors;
+var Ws = null;
+var parseURL = null;
+var myBtoa = null;
 // @ts-ignore: WebSocket
-/*
 if (typeof window !== 'undefined' && typeof window.WebSocket !== 'undefined') {
     // @ts-ignore: WebSocket
     Ws = window.WebSocket;
     myBtoa = btoa;
-    parseURL = (iurl: any) => {
+    parseURL = function (iurl) {
         return new URL(iurl);
-    };
-} else {
-*/
-Ws = require('websocket').w3cwebsocket;
-myBtoa = (str) => {
-    return new Buffer(str).toString('base64');
-};
-const url = require('url');
-if (url.URL) {
-    // Use the new Node 6+ API for parsing URLs that supports username/password
-    const newURL = url.URL;
-    parseURL = (iurl) => {
-        return new newURL(iurl);
     };
 }
 else {
-    // Web3 supports Node.js 5, so fall back to the legacy URL API if necessary
-    parseURL = require('url').parse;
+    Ws = require('websocket').w3cwebsocket;
+    myBtoa = function (str) {
+        return new Buffer(str).toString('base64');
+    };
+    var url = require('url');
+    if (url.URL) {
+        // Use the new Node 6+ API for parsing URLs that supports username/password
+        var newURL_1 = url.URL;
+        parseURL = function (iurl) {
+            return new newURL_1(iurl);
+        };
+    }
+    else {
+        // Web3 supports Node.js 5, so fall back to the legacy URL API if necessary
+        parseURL = require('url').parse;
+    }
 }
-// }
 // Default connection ws://localhost:8546
-class WsProvider {
-    constructor(url, options) {
+var WsProviderCache = /** @class */ (function () {
+    function WsProviderCache(url, options) {
+        var _this = this;
         this.hits = 0;
         this.requests = [];
         this.cache = {};
         this.usecache = false;
         this.savetocache = false;
-        const othis = this;
+        var othis = this;
         this.responseCallbacks = {};
         this.notificationCallbacks = [];
         options = options || {};
@@ -49,23 +49,23 @@ class WsProvider {
         // The w3cwebsocket implementation does not support Basic Auth
         // username/password in the URL. So generate the basic auth header, and
         // pass through with any additional headers supplied in constructor
-        const parsedURL = parseURL(url);
-        const headers = options.headers || {};
-        const protocol = options.protocol || undefined;
+        var parsedURL = parseURL(url);
+        var headers = options.headers || {};
+        var protocol = options.protocol || undefined;
         if (parsedURL.username && parsedURL.password) {
             headers.authorization = 'Basic ' + myBtoa(parsedURL.username + ':' + parsedURL.password);
         }
         this.connection = new Ws(url, protocol, undefined, headers);
         this.addDefaultEvents();
         // LISTEN FOR CONNECTION RESPONSES
-        this.connection.onmessage = (e) => {
+        this.connection.onmessage = function (e) {
             /*jshint maxcomplexity: 6 */
-            const data = (typeof e.data === 'string') ? e.data : '';
-            othis.parseResponse(data).forEach((result) => {
-                let id = null;
+            var data = (typeof e.data === 'string') ? e.data : '';
+            othis.parseResponse(data).forEach(function (result) {
+                var id = null;
                 // get the id which matches the returned id
                 if (_.isArray(result)) {
-                    result.forEach((load) => {
+                    result.forEach(function (load) {
                         if (othis.responseCallbacks[load.id]) {
                             id = load.id;
                         }
@@ -76,7 +76,7 @@ class WsProvider {
                 }
                 // notification
                 if (!id && result.method.indexOf('_subscription') !== -1) {
-                    othis.notificationCallbacks.forEach((callback) => {
+                    othis.notificationCallbacks.forEach(function (callback) {
                         if (_.isFunction(callback)) {
                             callback(result);
                         }
@@ -84,8 +84,8 @@ class WsProvider {
                     // fire the callback
                 }
                 else if (othis.responseCallbacks[id]) {
-                    if (this.usecache === true || this.savetocache === true) {
-                        this.toCache(othis.responseCallbacks[id].payload, result);
+                    if (_this.usecache === true || _this.savetocache === true) {
+                        _this.toCache(othis.responseCallbacks[id].payload, result);
                     }
                     othis.responseCallbacks[id](null, result);
                     delete othis.responseCallbacks[id];
@@ -94,22 +94,22 @@ class WsProvider {
         };
         // make property `connected` which will return the current connection status
         Object.defineProperty(this, 'connected', {
-            get: () => {
-                return this.connection && this.connection.readyState === this.connection.OPEN;
+            get: function () {
+                return _this.connection && _this.connection.readyState === _this.connection.OPEN;
             },
-            enumerable: true,
+            enumerable: true
         });
     }
     /*
         Will add the error and end event to timeout existing calls
         @method addDefaultEvents
     */
-    addDefaultEvents() {
-        const othis = this;
-        this.connection.onerror = () => {
+    WsProviderCache.prototype.addDefaultEvents = function () {
+        var othis = this;
+        this.connection.onerror = function () {
             othis.doTimeout();
         };
-        this.connection.onclose = () => {
+        this.connection.onclose = function () {
             othis.doTimeout();
             // reset all requests and callbacks
             othis.reset();
@@ -117,28 +117,28 @@ class WsProvider {
         // this.connection.on('timeout', function(){
         //     _this.doTimeout();
         // });
-    }
+    };
     /*
      Will parse the response and make an array out of it.
      @method _parseResponse
      @param {String} data
      */
-    parseResponse(data) {
-        const othis = this;
-        const returnValues = [];
+    WsProviderCache.prototype.parseResponse = function (data) {
+        var othis = this;
+        var returnValues = [];
         // DE-CHUNKER
-        const dechunkedData = data
+        var dechunkedData = data
             .replace(/\}[\n\r]?\{/g, '}|--|{') // }{
             .replace(/\}\][\n\r]?\[\{/g, '}]|--|[{') // }][{
             .replace(/\}[\n\r]?\[\{/g, '}|--|[{') // }[{
             .replace(/\}\][\n\r]?\{/g, '}]|--|{') // }]{
             .split('|--|');
-        dechunkedData.forEach((idata) => {
+        dechunkedData.forEach(function (idata) {
             // prepend the last chunk
             if (othis.lastChunk) {
                 idata = othis.lastChunk + idata;
             }
-            let result = null;
+            var result = null;
             try {
                 result = JSON.parse(idata);
             }
@@ -146,7 +146,7 @@ class WsProvider {
                 othis.lastChunk = idata;
                 // start timeout to cancel all requests
                 clearTimeout(othis.lastChunkTimeout);
-                othis.lastChunkTimeout = setTimeout(() => {
+                othis.lastChunkTimeout = setTimeout(function () {
                     othis.doTimeout();
                     throw errors.InvalidResponse(idata);
                 }, 1000 * 15);
@@ -160,53 +160,60 @@ class WsProvider {
             }
         });
         return returnValues;
-    }
+    };
     /*
         Adds a callback to the responseCallbacks object,
         which will be called if a response matching the response Id will arrive.
         @method _addResponseCallback
      */
-    addResponseCallback(payload, callback) {
-        const id = payload.id || payload[0].id;
-        const method = payload.method || payload[0].method;
+    WsProviderCache.prototype.addResponseCallback = function (payload, callback) {
+        var id = payload.id || payload[0].id;
+        var method = payload.method || payload[0].method;
         this.responseCallbacks[id] = callback;
         this.responseCallbacks[id].method = method;
         this.responseCallbacks[id].payload = payload;
-        const othis = this;
+        var othis = this;
         // schedule triggering the error response if a custom timeout is set
         if (this.customTimeout) {
-            setTimeout(() => {
+            setTimeout(function () {
                 if (othis.responseCallbacks[id]) {
                     othis.responseCallbacks[id](errors.ConnectionTimeout(othis.customTimeout));
                     delete othis.responseCallbacks[id];
                 }
             }, this.customTimeout);
         }
-    }
+    };
     /*
         Timeout all requests when the end/error event is fired
         @method doTimeout
      */
-    doTimeout() {
-        for (const key in this.responseCallbacks) {
+    WsProviderCache.prototype.doTimeout = function () {
+        for (var key in this.responseCallbacks) {
             if (this.responseCallbacks.hasOwnProperty(key)) {
                 this.responseCallbacks[key](errors.InvalidConnection('on WS'));
                 delete this.responseCallbacks[key];
             }
         }
-    }
-    send(payload, callback) {
+    };
+    WsProviderCache.prototype.send = function (payload, callback) {
         this.hits++;
         if (this.usecache === true) {
-            const cacheKey = this.getCacheKey(payload);
+            var cacheKey = this.getCacheKey(payload);
             if (this.inCacheByKey(cacheKey)) {
                 callback(null, this.fromCacheByKey(cacheKey, payload));
                 return;
             }
+            else {
+                /*
+                if (payload[0] === undefined ) {
+                    console.log("not in cache:", JSON.stringify(payload));
+                }
+                */
+            }
         }
-        const othis = this;
+        var othis = this;
         if (this.connection.readyState === this.connection.CONNECTING) {
-            setTimeout(() => {
+            setTimeout(function () {
                 othis.send(payload, callback);
             }, 10);
             return;
@@ -227,7 +234,7 @@ class WsProvider {
         }
         this.connection.send(JSON.stringify(payload));
         this.addResponseCallback(payload, callback);
-    }
+    };
     /*
         Subscribes to provider events.provider
 
@@ -235,7 +242,7 @@ class WsProvider {
         @param {String} type    'notifcation', 'connect', 'error', 'end' or 'data'
         @param {Function} callback   the callback to call
     */
-    on(type, callback) {
+    WsProviderCache.prototype.on = function (type, callback) {
         if (typeof callback !== 'function') {
             throw new Error('The second parameter callback must be a function.');
         }
@@ -256,7 +263,7 @@ class WsProvider {
             //     this.connection.on(type, callback);
             //     break;
         }
-    }
+    };
     // TODO add once
     /*
         Removes event listener
@@ -265,11 +272,11 @@ class WsProvider {
         @param {String} type    'notifcation', 'connect', 'error', 'end' or 'data'
         @param {Function} callback   the callback to call
     */
-    removeListener(type, callback) {
-        const othis = this;
+    WsProviderCache.prototype.removeListener = function (type, callback) {
+        var othis = this;
         switch (type) {
             case 'data':
-                this.notificationCallbacks.forEach((cb, index) => {
+                this.notificationCallbacks.forEach(function (cb, index) {
                     if (cb === callback) {
                         othis.notificationCallbacks.splice(index, 1);
                     }
@@ -280,14 +287,14 @@ class WsProvider {
             //     this.connection.removeListener(type, callback);
             //     break;
         }
-    }
+    };
     /*
         Removes all event listeners
 
         @method removeAllListeners
         @param {String} type    'notifcation', 'connect', 'error', 'end' or 'data'
      */
-    removeAllListeners(type) {
+    WsProviderCache.prototype.removeAllListeners = function (type) {
         switch (type) {
             case 'data':
                 this.notificationCallbacks = [];
@@ -306,59 +313,59 @@ class WsProvider {
                 // this.connection.removeAllListeners(type);
                 break;
         }
-    }
+    };
     /*
         Resets the providers, clears all callbacks
 
         @method reset
     */
-    reset() {
+    WsProviderCache.prototype.reset = function () {
         this.doTimeout();
         this.notificationCallbacks = [];
         // this.connection.removeAllListeners('error');
         // this.connection.removeAllListeners('end');
         // this.connection.removeAllListeners('timeout');
         this.addDefaultEvents();
-    }
-    close() {
+    };
+    WsProviderCache.prototype.close = function () {
         this.connection.close();
-    }
-    saveToCache(val) {
+    };
+    WsProviderCache.prototype.saveToCache = function (val) {
         this.savetocache = val;
-    }
-    useCache(val) {
+    };
+    WsProviderCache.prototype.useCache = function (val) {
         this.usecache = val;
-    }
+    };
     /**
      * Enable request caching
      *
      * @param boolean
      */
-    enableCache(setting) {
+    WsProviderCache.prototype.enableCache = function (setting) {
         this.usecache = setting;
-    }
+    };
     /**
      * Set caching object reference
      *
      * @param {object}
      */
-    setCache(data) {
+    WsProviderCache.prototype.setCache = function (data) {
         this.cache = data;
-    }
+    };
     /**
      * Retrieve data from cache by payload
      *
      * @param {payload} object
      * @returns {result} cached rpc result
      */
-    fromCache(payload) {
-        const cacheKey = this.getCacheKey(payload);
+    WsProviderCache.prototype.fromCache = function (payload) {
+        var cacheKey = this.getCacheKey(payload);
         return {
             jsonrpc: payload.jsonrpc,
             id: payload.id,
-            result: this.cache[cacheKey],
+            result: this.cache[cacheKey]
         };
-    }
+    };
     /**
      * Retrieve data from cache by cache key
      *
@@ -366,55 +373,56 @@ class WsProvider {
      * @param {payload} object
      * @returns {result} cached rpc result
      */
-    fromCacheByKey(cacheKey, payload) {
+    WsProviderCache.prototype.fromCacheByKey = function (cacheKey, payload) {
         return {
             jsonrpc: payload.jsonrpc,
             id: payload.id,
-            result: this.cache[cacheKey],
+            result: this.cache[cacheKey]
         };
-    }
+    };
     /**
      * Check if payload has a cached result stored
      *
      * @param {payload} object
      * @returns boolean
      */
-    inCache(payload) {
-        const cacheKey = this.getCacheKey(payload);
+    WsProviderCache.prototype.inCache = function (payload) {
+        var cacheKey = this.getCacheKey(payload);
+        console.log("inCache", cacheKey, JSON.stringify(payload));
         if (this.cache.hasOwnProperty(cacheKey)) {
             return true;
         }
         return false;
-    }
+    };
     /**
      * Check if cacheKey has a cached result stored
      *
      * @param cache key
      * @returns boolean
      */
-    inCacheByKey(cacheKey) {
+    WsProviderCache.prototype.inCacheByKey = function (cacheKey) {
         if (this.cache.hasOwnProperty(cacheKey)) {
             return true;
         }
         return false;
-    }
+    };
     /**
      * Save result in cache
      *
      * @param {payload} rpc call
      * @param {result} rpc result
      */
-    toCache(payload, result) {
+    WsProviderCache.prototype.toCache = function (payload, result) {
         this.cache[this.getCacheKey(payload)] = result.result;
-    }
+    };
     /**
      * Get cache key for payload - rpc call
      *
      * @param {payload} rpc call
      * @returns cache key string
      */
-    getCacheKey(payload) {
-        let key;
+    WsProviderCache.prototype.getCacheKey = function (payload) {
+        var key;
         if (payload.length > 1) {
             // key = "batch_" + CryptoJS.MD5(JSON.stringify(payload));
         }
@@ -430,7 +438,7 @@ class WsProvider {
             }
         }
         return key;
-    }
-}
-exports.default = WsProvider;
-//# sourceMappingURL=WsProvider.js.map
+    };
+    return WsProviderCache;
+}());
+exports["default"] = WsProviderCache;
