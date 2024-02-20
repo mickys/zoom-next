@@ -16,18 +16,18 @@ const libConfig = {
     ],
   };
 
-const demoConfig = {
-  input: "src-demo/index.ts",
-  output: {
-    dir: "demo/js",
-    name: "Demo",
-  },
-  external: [],
-  plugins: [
-    resolve({ browser: true, mainFields: ["module"] }),
-    commonjs({}),
-    sucrase({ transforms: ["typescript"] }),
-  ],
-};
+// const demoConfig = {
+//   input: "src-demo/index.ts",
+//   output: {
+//     dir: "demo/js",
+//     name: "Demo",
+//   },
+//   external: [],
+//   plugins: [
+//     resolve({ browser: true, mainFields: ["module"] }),
+//     commonjs({}),
+//     sucrase({ transforms: ["typescript"] }),
+//   ],
+// };
 
 export default [libConfig, demoConfig];

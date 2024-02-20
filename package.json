@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p . && npm run build:dec",
     "build:dec": "tsc --declaration true --emitDeclarationOnly --declarationDir dist/types",
-
+    "build:js": "tsc -p . && yarn rollup -c rollup.config.js",
     "test": "tsc -p . && scripts/run_tests.sh local",
     "test:local": "npm run test",
     "test:reuse": "tsc -p . && scripts/run_tests.sh local use-existing",
