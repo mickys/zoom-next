@@ -191,13 +191,10 @@ export default class Zoom {
                     
                     if(callType === 2) {
 
-                        // previous call always.
-                        const resultId = callIndex - 1;
                         packet.type = 2;
                         packet.toAddress = new ByteArray(Buffer.alloc(0));
-                        packet.resultId = resultId;
-                        packet.offset = this.callsData[identifier].resultIndex * 32;
-                       
+                        packet.resultId = this.callsData[identifier].resultIndex;
+                        packet.offset = this.callsData[identifier].resultIndex * 32 + 12;
 
                     } else if(callType === 3) {
                         for(let y = 0; y < this.callsData[identifier].mapkey.length; y++) {
@@ -231,8 +228,8 @@ export default class Zoom {
                         packet.resultId = this.lastMappingCountCallID;
                     }
 
-                    callIndex++;
                 }
+                callIndex++;
                 
                 // console.log("encoded:", idx, callIndex, this.binary.length, packet.type, this.createBinaryCallByteArray(packet, callData).toString("hex"));
 
@@ -409,8 +406,7 @@ export default class Zoom {
             let toAddress: string;
 
             if (type === 1 || type === 3 || type === 4 || type === 5 || type === 6 || type === 7) {
-                
-                // bypass 5 bytes used in type 2 for result id and offset and 1 byte for unused space
+                // bypass 5 bytes used in type 2 ( 2 result id / 2 offset / 1 byte for unused space )
                 bytes.advanceReadPositionBy(5);
 
                 // normal call that contains toAddress and callData
@@ -547,7 +543,7 @@ export default class Zoom {
         return this.addTypeCall(5, _contract, _methodAndParams, _fullSig);
     }
 
-    private addTypeCall(_type: number, _contract:any, _methodAndParams: any, _fullSig?: string) {
+    public addTypeCall(_type: number, _contract:any, _methodAndParams: any, _fullSig?: string) {
 
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
         const _key = (_contract.address+"_"+methodSig).toLowerCase();
@@ -621,6 +617,10 @@ export default class Zoom {
         return this._addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig, 7);
     }
 
+    public addCallToResultingAddressCall(_contract:any, _methodAndParams: any, resultIndex: number, _fullSig: any) {
+        return this._addResultReferenceCall(_contract, _methodAndParams, resultIndex, _fullSig, 2);
+    }
+
     public _addResultReferenceCall(_contract:any, _methodAndParams: any, resultIndex: number, _fullSig: any, type: number) {
 
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
@@ -673,8 +673,22 @@ export default class Zoom {
             const key = callDetails.key+"_"+callDetails.count;
             // console.log("Decode call 6/7", key, this.lastCallData[key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[key]);
+        } else if(callDetails.type === 2) {
+            // need to find address value at callDetails.resultIndex
+            // so we can build the actual key we're looking for
+            const resultKey = Object.keys(this.callsData)[callDetails.resultIndex];
+            const resultCallDetails = this.callsData[resultKey];
+            let value = resultCallDetails.contract.interface.decodeFunctionResult(resultCallDetails.fullSig, this.lastCallData[resultCallDetails.key]);
+            const key = callDetails.key.replace(
+                callDetails.key.substring(0, 42),
+                value.toString().toLowerCase()
+            )
+
+            return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[key]);
+
+
         } else {
-            // console.log("Decode call else", callDetails.key,this.lastCallData[callDetails.key])
+            console.log("Decode call else", callDetails.key,this.lastCallData[callDetails.key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[callDetails.key]);
         }
     }
