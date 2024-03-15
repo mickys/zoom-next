@@ -107,7 +107,7 @@ export default class Zoom {
     addCall(_contract: any, _methodAndParams: any, _fullSig?: string): string;
     addType4Call(_contract: any, _methodAndParams: any, _fullSig?: string): string;
     addType5Call(_contract: any, _methodAndParams: any, _fullSig?: string): string;
-    private addTypeCall;
+    addTypeCall(_type: number, _contract: any, _methodAndParams: any, _fullSig?: string): string;
     /**
      * Add a special view call
      *
@@ -125,6 +125,7 @@ export default class Zoom {
      */
     addResultReferenceCountedCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any): string;
     addResultReferenceCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any): string;
+    addCallToResultingAddressCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any): string;
     _addResultReferenceCall(_contract: any, _methodAndParams: any, resultIndex: number, _fullSig: any, type: number): string;
     /**
      * Decode a call to an address
