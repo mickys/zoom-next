@@ -688,7 +688,7 @@ export default class Zoom {
 
 
         } else {
-            console.log("Decode call else", callDetails.key,this.lastCallData[callDetails.key])
+            // console.log("Decode call else", callDetails.key,this.lastCallData[callDetails.key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[callDetails.key]);
         }
     }
