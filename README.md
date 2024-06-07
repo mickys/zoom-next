@@ -1,5 +1,10 @@
 # Zoom
 
+## 0. Simple Usage - look at demos
+```javascript
+"src-demo/Zoom2.ts"
+```
+
 ## 1. Description
 
 Is a set of tools created in order to make Distributed Applications ( DAPPs ) load faster with optimised network calls and reduced resource usage on Ethereum nodes that process their requests.

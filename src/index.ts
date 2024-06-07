@@ -9,6 +9,7 @@
 */
 
 import Zoom from "./zoom/core";
+import Zoom2 from "./zoom/core2";
 import ByteArray from "./utils/ByteArray";
 
 declare global {
@@ -18,10 +19,12 @@ declare global {
 if (typeof window !== 'undefined') {
     window.ZoomMin = window.ZoomMin || {};
     window.ZoomMin.Zoom = Zoom;
+    window.ZoomMin.Zoom2 = Zoom2;
     window.ZoomMin.ByteArray = ByteArray;
 }
 
 export {
     Zoom,
+    Zoom2,
     ByteArray,
 };
