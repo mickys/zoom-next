@@ -30,12 +30,9 @@ async function init() {
 
     const ZoomLibraryInstance = new Zoom2();
     const ZoomContractInstance = new ethers.Contract("0xaeca29502D9260439e009083F45cc2d9F1fA1267", ZoomLibraryInstance.zoomABI, provider);
+    const ZoomVersionView = new ethers.Contract("0x3D4F573904B98066887332EdeF1b3f9b155e8080", versionABI, provider);
 
     let TheRegistry = new ethers.Contract("0xCA94d8F6ecF6D6321863Ad0cA95E248d0bd7263D", REGISTRY_ABI, provider);
-
-    const ZOOM_VERSION_VIEW_ADDRESS = await TheRegistry.getRegistryAddress("ZOOM_VERSION_VIEW");
-    const ZoomVersionView = new ethers.Contract(ZOOM_VERSION_VIEW_ADDRESS, versionABI, provider);
-
 
     const ACTION_HUB = ZoomLibraryInstance.addMappingCountCall(
         // the contract we're calling
