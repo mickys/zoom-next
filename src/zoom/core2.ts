@@ -538,10 +538,18 @@ export default class Zoom2 {
     }
 
     public addResolver(identifier: string): Promise<any> {
-        const callback = () => { return this.decodeCall(identifier)[0];}
+        const callback = () => { 
+            return this.decodeCall(identifier)[0];
+        }
         let resolver: any;
-        const promise = new Promise((resolve, _reject) => { 
-            resolver = () => {resolve(callback())}; 
+        const promise = new Promise((resolve, reject) => { 
+            resolver = () => {
+                try {
+                    resolve(callback());
+                } catch(e) {
+                    reject(e);
+                }
+            }; 
         })
         this.resolvers.push(resolver);
         return promise;

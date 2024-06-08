@@ -61,6 +61,32 @@ async function init() {
     );
 
 
+    const TEST_KEY = ZoomLibraryInstance.addMappingCountCall(
+        // the contract we're calling
+        TheRegistry,
+        // the method that is returing our address
+        ["getRegistryAddress(string memory key)", ["TEST_KEY"]],
+        // signature used to decode the result
+        "getRegistryAddress(string memory key) external view returns (address)",
+        // array of next method calls that will use the result of this current call
+        [
+            { contract: ZoomVersionView, mapAndParams: ["getVersion(address)", [ethers.constants.AddressZero]] }
+        ]
+    );
+
+    // value of the previous call is the address we want to use as a parameter
+    // to this next call to a different contract
+    // in our case being ZOOM_VERSION_VIEW.getVersion( result address )
+    // call 2 - getVersion() - type 7
+
+    // this is a call where the address is present in the previous result
+    const TEST_KEY_Version = ZoomLibraryInstance.addResultReferenceCall(
+        ZoomVersionView,
+        ["getVersion(address)", [ethers.constants.AddressZero]],
+        0,
+        "getVersion(address) returns (uint256)" 
+    );
+
     const COMMUNITY_LIST = ZoomLibraryInstance.addCall(
         TheRegistry,
         ["getRegistryAddress(string memory key)", ["COMMUNITY_LIST"]],
@@ -71,7 +97,11 @@ async function init() {
     await ZoomLibraryInstance.runZoomCallAndFulfillPromises(ZoomContractInstance, true, console.log);
 
     console.log("ACTION_HUB is:      ", await ACTION_HUB);
-    console.log("ACTION_HUB Version: ", (await ACTION_HUB_Version).toString());
+    console.log("ACTION_HUB Version: ", await (ACTION_HUB_Version).then((e)=>{ return e.toString() }).catch((e)=>{ return 0; }) );
+ 
+    console.log("TEST_KEY is:        ", await TEST_KEY);
+    console.log("TEST_KEY Version:   ", await (TEST_KEY_Version).then((e)=>{ return e.toString() }).catch((e)=>{ return 0; }) );
+    
     console.log("COMMUNITY_LIST is:  ", await COMMUNITY_LIST);
 
 }
