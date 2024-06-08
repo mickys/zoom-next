@@ -93,14 +93,13 @@ async function init() {
         "getRegistryAddress(string memory key) external view returns (address)"
     );
 
-
     await ZoomLibraryInstance.runZoomCallAndFulfillPromises(ZoomContractInstance, true, console.log);
 
     console.log("ACTION_HUB is:      ", await ACTION_HUB);
-    console.log("ACTION_HUB Version: ", await (ACTION_HUB_Version).then((e)=>{ return e.toString() }).catch((e)=>{ return 0; }) );
+    console.log("ACTION_HUB Version: ", await (ACTION_HUB_Version).catch((e)=>{ return 0; }) );
  
     console.log("TEST_KEY is:        ", await TEST_KEY);
-    console.log("TEST_KEY Version:   ", await (TEST_KEY_Version).then((e)=>{ return e.toString() }).catch((e)=>{ return 0; }) );
+    console.log("TEST_KEY Version:   ", await (TEST_KEY_Version).catch((e)=>{ return 0; }) );
     
     console.log("COMMUNITY_LIST is:  ", await COMMUNITY_LIST);
 

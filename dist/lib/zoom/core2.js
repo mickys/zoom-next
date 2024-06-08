@@ -395,10 +395,19 @@ class Zoom2 {
         return this.addResolver(identifier);
     }
     addResolver(identifier) {
-        const callback = () => { return this.decodeCall(identifier)[0]; };
+        const callback = () => {
+            return this.decodeCall(identifier)[0];
+        };
         let resolver;
-        const promise = new Promise((resolve, _reject) => {
-            resolver = () => { resolve(callback()); };
+        const promise = new Promise((resolve, reject) => {
+            resolver = () => {
+                try {
+                    resolve(callback());
+                }
+                catch (e) {
+                    reject(e);
+                }
+            };
         });
         this.resolvers.push(resolver);
         return promise;
