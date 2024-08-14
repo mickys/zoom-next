@@ -24,6 +24,11 @@ export const versionABI         = [
     "function version() external view returns (uint256)"
 ];
 
+export const ACTION_HUB_ABI       = [
+    "function galaxisRegistry() external view returns(address)"
+    // "function version() external view returns (uint256)"
+];
+
 async function init() {
 
     const provider = new ethers.providers.JsonRpcProvider("https://sepolia.nowlive.ro/");
@@ -32,7 +37,11 @@ async function init() {
     const ZoomContractInstance = new ethers.Contract("0xaeca29502D9260439e009083F45cc2d9F1fA1267", ZoomLibraryInstance.zoomABI, provider);
     const ZoomVersionView = new ethers.Contract("0x3D4F573904B98066887332EdeF1b3f9b155e8080", versionABI, provider);
 
-    let TheRegistry = new ethers.Contract("0xCA94d8F6ecF6D6321863Ad0cA95E248d0bd7263D", REGISTRY_ABI, provider);
+    const TheRegistry = new ethers.Contract("0xCA94d8F6ecF6D6321863Ad0cA95E248d0bd7263D", REGISTRY_ABI, provider);
+
+    const ACTION_HUB_Instance = new ethers.Contract("0xb18374bc3624fDb964A944AC3C2f59F077d902dE", ACTION_HUB_ABI, provider);
+
+    
 
     const ACTION_HUB = ZoomLibraryInstance.addMappingCountCall(
         // the contract we're calling
@@ -93,6 +102,24 @@ async function init() {
         "getRegistryAddress(string memory key) external view returns (address)"
     );
 
+    const ACTION_HUB_registry = ZoomLibraryInstance.addCall(
+        ACTION_HUB_Instance,
+        ["galaxisRegistry"],
+        "galaxisRegistry() external view returns (address)"
+    );
+
+    // const methodSig = ACTION_HUB_Instance.interface.encodeFunctionData("galaxisRegistry()");
+    // console.log("methodSig", methodSig);
+
+
+    // const ACTION_HUB_registry = ZoomLibraryInstance.addCall(
+    //     ACTION_HUB_Instance,
+    //     ["galaxisRegistry"],
+    //     "galaxisRegistry() external view returns(address addr)"
+    // );
+
+
+
     await ZoomLibraryInstance.runZoomCallAndFulfillPromises(ZoomContractInstance, true, console.log);
 
     console.log("ACTION_HUB is:      ", await ACTION_HUB);
@@ -103,6 +130,8 @@ async function init() {
     
     console.log("COMMUNITY_LIST is:  ", await COMMUNITY_LIST);
 
+    console.log("ACTION_HUB_registry:", await ACTION_HUB_registry);
+    
 }
 
 init();

@@ -1,4 +1,4 @@
-import { HardhatUserConfig } from "hardhat/types";
+  import { HardhatUserConfig } from "hardhat/types";
 
 import '@typechain/hardhat'
 import "@nomiclabs/hardhat-etherscan";
@@ -38,7 +38,7 @@ task(
 
 // const gasPrice = 50000000000; // 50 GWEI
 // const gasPrice = 100000000000; // 100 GWEI
-   const gasPrice =  30000000000; // 100 GWEI
+   const gasPrice =  35000000000; // 30 GWEI
 // const gasLimit = 12450000; // mainnet
 const gasLimit = 9500000;  // rinkeby
 
@@ -108,7 +108,14 @@ module.exports = {
       accounts: [OWNER_PRIVATE_KEY],
       chainId: 137,
       gasPrice: gasPrice
-    },  
+    },
+    polygonAmoy: {
+      // url: `https://polygon-rpc.com/`,
+      url: `https://rpc-amoy.polygon.technology`,
+      accounts: [OWNER_PRIVATE_KEY],
+      chainId: 80002,
+      gasPrice: gasPrice
+    }, 
   },
   etherscan: {
     // Your API key for Etherscan
@@ -119,6 +126,7 @@ module.exports = {
       polygon: POLYGONSCAN_API_KEY,
       sepolia: ETHERSCAN_API_KEY,
       polygonMumbai: POLYGONSCAN_API_KEY,
+      polygonAmoy: POLYGONSCAN_API_KEY,
       arbitrum_goerli: ARBITRUM_API_KEY,
       optimistic_goerli: OPTIMISM_API_KEY,
       arbitrum_sepolia: ARBITRUM_API_KEY,
