@@ -106,11 +106,11 @@ export default class Zoom2 {
      *
      * @returns call indentifier
      */
-    addCall(_contract: any, _methodAndParams: any, _fullSig?: string): Promise<string>;
+    addCall(_contract: any, _contractAddress: string, _methodAndParams: any, _fullSig?: string): Promise<string>;
     addResolver(identifier: string): Promise<any>;
     addType4Call(_contract: any, _methodAndParams: any, _fullSig?: string): Promise<string>;
     addType5Call(_contract: any, _methodAndParams: any, _fullSig?: string): Promise<string>;
-    addTypeCall(_type: number, _contract: any, _methodAndParams: any, _fullSig?: string): Promise<string>;
+    addTypeCall(_type: number, _contract: any, _contractAddress: string, _methodAndParams: any, _fullSig?: string): Promise<string>;
     /**
      * Add a special view call
      *

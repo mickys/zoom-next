@@ -293,7 +293,6 @@ class Zoom2 {
         for (let i = 0; i < callLength; i++) {
             Results.push(resultString.substring(resultOffsets[i] * 2, resultOffsets[i + 1] * 2));
         }
-        // console.log("Results", Results)
         for (let i = 0; i < callLength; i++) {
             // 1 byte - uint8 call type ( 1 normal / 2 - to address is result of a previous call )
             const type = bytes.readByte();
@@ -376,9 +375,9 @@ class Zoom2 {
      *
      * @returns call indentifier
      */
-    async addCall(_contract, _methodAndParams, _fullSig) {
+    async addCall(_contract, _contractAddress, _methodAndParams, _fullSig) {
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
-        const _key = (_contract.address + "_" + methodSig).toLowerCase();
+        const _key = (_contractAddress + "_" + methodSig).toLowerCase();
         const identifier = MD5_1.default.hash(_key);
         if (typeof this.calls[_key] !== "undefined") {
             throw new Error("key already in use[" + _key + "]");
@@ -418,9 +417,9 @@ class Zoom2 {
     addType5Call(_contract, _methodAndParams, _fullSig) {
         return this.addTypeCall(5, _contract, _methodAndParams, _fullSig);
     }
-    addTypeCall(_type, _contract, _methodAndParams, _fullSig) {
+    addTypeCall(_type, _contract, _contractAddress, _methodAndParams, _fullSig) {
         const methodSig = _contract.interface.encodeFunctionData(..._methodAndParams);
-        const _key = (_contract.address + "_" + methodSig).toLowerCase();
+        const _key = (_contractAddress + "_" + methodSig).toLowerCase();
         const identifier = MD5_1.default.hash(_key);
         this.calls[_key] = "";
         if (typeof _fullSig === "undefined") {
@@ -534,7 +533,7 @@ class Zoom2 {
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[key]);
         }
         else {
-            // console.log("Decode call else", callDetails.key,this.lastCallData[callDetails.key])
+            // console.log("Decode call else type:", callDetails.type, callDetails.key,this.lastCallData[callDetails.key])
             return callDetails.contract.interface.decodeFunctionResult(sig, this.lastCallData[callDetails.key]);
         }
     }
@@ -557,13 +556,15 @@ class Zoom2 {
     async runZoomCallAndFulfillPromises(ZoomContractInstance, reset = false, debugFn = false) {
         const ZoomQueryBinary = this.getZoomCall();
         debugFn && debugFn("  - Executing ZOOM Call for", this.resolvers.length, "calls");
-        const SetupGasCostEstimate = await ZoomContractInstance.estimateGas.combine(ZoomQueryBinary);
-        debugFn && debugFn("    - Gas Estimate", SetupGasCostEstimate.toNumber());
+        const SetupGasCostEstimate = await ZoomContractInstance.combine.estimateGas(ZoomQueryBinary);
+        debugFn && debugFn("    - Gas Estimate", parseInt(SetupGasCostEstimate.toString()));
         const t0 = performance.now();
         const combinedResult = await ZoomContractInstance.combine(ZoomQueryBinary);
         const time = performance.now() - t0;
         debugFn && debugFn("    - Call time", time / 1000, "seconds.");
         debugFn && debugFn("");
+        console.log("combinedResult  ", combinedResult);
+        console.log("ZoomQueryBinary ", ZoomQueryBinary);
         this.resultsToCache(combinedResult, ZoomQueryBinary);
         for (let i = 0; i < this.resolvers.length; i++) {
             this.resolvers[i](1);
