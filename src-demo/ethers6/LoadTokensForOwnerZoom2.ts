@@ -20,26 +20,53 @@ async function init() {
     const walletAddress = "0x51eD19819B5a960B4B3aDfeDEedCeCaB51953010";
 
     // contract address
-    const ERC721Address = "0xF1D6A8E031740efE05975162e9C6908aA273D593";
+    const ERC721AddressA = "0xF1D6A8E031740efE05975162e9C6908aA273D593";
+    const ERC721AddressB = "0xa65d33fb21f64942679f44b05bcf8f71b60cd233";
 
     const provider = new ethers.JsonRpcProvider("https://sepolia.nowlive.ro/");
 
     const ZoomLibraryInstance = new Zoom2();
     const ZoomContractInstance = new ethers.Contract("0xaeca29502D9260439e009083F45cc2d9F1fA1267", ZoomLibraryInstance.zoomABI, provider);
 
-    const ERC721            = new ethers.Contract(ERC721Address, ERC721_ABI, provider);
-    const balance           = await ERC721.balanceOf(walletAddress);
-    console.log("balance", balance);
+    const ERC721_A            = new ethers.Contract(ERC721AddressA, ERC721_ABI, provider);
+    const ERC721_B            = new ethers.Contract(ERC721AddressB, ERC721_ABI, provider);
+    
 
-    const tokenIds: any = [];
+    const balanceA = ZoomLibraryInstance.addCall(
+        ERC721_A,
+        ERC721AddressA,
+        ["balanceOf(address owner)", [walletAddress]],
+        "function balanceOf(address target) external view returns (uint256)"
+    );
+    const balanceB = ZoomLibraryInstance.addCall(
+        ERC721_B,
+        ERC721AddressB,
+        ["balanceOf(address owner)", [walletAddress]],
+        "function balanceOf(address target) external view returns (uint256)"
+    );
+    await ZoomLibraryInstance.runZoomCallAndFulfillPromises(ZoomContractInstance, true, console.log);
+
+
+    console.log("balance A", await balanceA);
+    console.log("balance B", await balanceB);
+
     
-    const start = 0;
-    const end = balance;
+    const tokenIdsA: any = [];
+    const tokenIdsB: any = [];
     
-    for(let i = start; i < end; i++) {
-        tokenIds[i] = ZoomLibraryInstance.addCall(
-            ERC721,
-            ERC721Address,
+    
+    for(let i = 0; i < parseInt(await balanceA); i++) {
+        tokenIdsA[i] = ZoomLibraryInstance.addCall(
+            ERC721_A,
+            ERC721AddressA,
+            ["tokenOfOwnerByIndex(address owner, uint256 id)", [walletAddress, i]],
+            "function tokenOfOwnerByIndex(address owner, uint256 id) external view returns (uint256)"
+        );
+    }
+    for(let i = 0; i < parseInt(await balanceB); i++) {
+        tokenIdsB[i] = ZoomLibraryInstance.addCall(
+            ERC721_A,
+            ERC721AddressB,
             ["tokenOfOwnerByIndex(address owner, uint256 id)", [walletAddress, i]],
             "function tokenOfOwnerByIndex(address owner, uint256 id) external view returns (uint256)"
         );
@@ -47,8 +74,13 @@ async function init() {
 
     await ZoomLibraryInstance.runZoomCallAndFulfillPromises(ZoomContractInstance, true, console.log);
 
-    for(let i = start; i < end; i++) {
-        console.log("token i", i, "has id:", await tokenIds[i]);
+    
+    for(let i = 0; i < parseInt(await balanceA); i++) {
+        console.log("token A i", i, "has id:", await tokenIdsA[i]);
+    }
+
+    for(let i = 0; i < parseInt(await balanceB); i++) {
+        console.log("token B i", i, "has id:", await tokenIdsB[i]);
     }
 
 }
