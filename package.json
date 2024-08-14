@@ -1,7 +1,7 @@
 {
   "name": "zoom-next",
-  "version": "4.0.0",
-  "description": "Zoom Next",
+  "version": "6.0.0",
+  "description": "Zoom Next - ethers-v6",
   "main": "dist/lib/index.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
@@ -19,7 +19,11 @@
     "test-node": "npx hardhat node",
     "test-with-node": "npx hardhat test --network localhost",
     "build:demo": "tsc && yarn rollup -c rollup.config.js",
-    "demo": "yarn rollup -c rollup.config.js && serve docs"
+    "demo": "yarn rollup -c rollup.config.js && serve docs",
+    "pub": "npm run build && npm publish --access public"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts2": {
     "test": "npx hardhat test",
