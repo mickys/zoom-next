@@ -19,7 +19,8 @@
     "test-node": "npx hardhat node",
     "test-with-node": "npx hardhat test --network localhost",
     "build:demo": "tsc && yarn rollup -c rollup.config.js",
-    "demo": "yarn rollup -c rollup.config.js && serve docs"
+    "demo": "yarn rollup -c rollup.config.js && serve docs",
+    "pub": "npm run build && npm publish --access public"
   },
   "scripts2": {
     "test": "npx hardhat test",

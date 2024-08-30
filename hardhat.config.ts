@@ -19,6 +19,7 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const ARBITRUM_API_KEY = process.env.ARBITRUM_API_KEY;
 const OPTIMISM_API_KEY = process.env.OPTIMISM_API_KEY;
+const BASE_API_KEY = process.env.BASE_API_KEY;
 
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -108,7 +109,19 @@ module.exports = {
       accounts: [OWNER_PRIVATE_KEY],
       chainId: 137,
       gasPrice: gasPrice
-    },  
+    },
+    base_sepolia: {
+      url: `https://sepolia.base.org`,
+      accounts: [OWNER_PRIVATE_KEY],
+    },
+    polygonAmoy: {
+      // url: `https://polygon-rpc.com/`,
+      // url: `https://polygon-mainnet.infura.io/v3/1fc164b9a9054e4bab0f54e3d8d312b8`,
+      url: `https://polygon-amoy.infura.io/v3/${INFURA_ID}`,
+      accounts: [OWNER_PRIVATE_KEY],
+      chainId: 80002,
+      // gasPrice: gasPrice_amoy,
+    },
   },
   etherscan: {
     // Your API key for Etherscan
@@ -122,6 +135,7 @@ module.exports = {
       arbitrum_goerli: ARBITRUM_API_KEY,
       optimistic_goerli: OPTIMISM_API_KEY,
       arbitrum_sepolia: ARBITRUM_API_KEY,
+      base_sepolia: BASE_API_KEY
     },
   },
   solidity: {
