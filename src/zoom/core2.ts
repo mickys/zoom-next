@@ -539,7 +539,12 @@ export default class Zoom2 {
 
     public addResolver(identifier: string): Promise<any> {
         const callback = () => { 
-            return this.decodeCall(identifier)[0];
+
+            const decoded = this.decodeCall(identifier);
+            if(decoded.lenght > 1) {
+                return decoded;
+            }
+            return decoded[0];
         }
         let resolver: any;
         const promise = new Promise((resolve, reject) => { 

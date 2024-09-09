@@ -1,6 +1,6 @@
 {
   "name": "zoom-next",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Zoom Next",
   "main": "dist/lib/index.js",
   "types": "dist/types/index.d.ts",
