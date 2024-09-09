@@ -541,7 +541,7 @@ export default class Zoom2 {
         const callback = () => { 
 
             const decoded = this.decodeCall(identifier);
-            if(decoded.lenght > 1) {
+            if(decoded.length > 1) {
                 return decoded;
             }
             return decoded[0];
